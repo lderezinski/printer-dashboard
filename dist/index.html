@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="A local health dashboard for your four Flashforge printers.">
-  <title>Flashforge · Printer health</title>
+  <meta name="description" content="Local status for your Flashforge 3D printers and Brother laser printers.">
+  <title>3D printer health · Linda’s Office</title>
   <link rel="stylesheet" href="/style.css">
   <script type="module" src="/app.js"></script>
 </head>
 <body>
   <main>
-    <header><div><p class="eyebrow">FLASHFORGE / Linda's Office</p><h1>Printer health</h1></div><div class="connection"><p id="updated" data-status="connecting">Connecting to dashboard…</p></div></header>
+    <header><div><p class="eyebrow">Linda's Office / Printers</p><h1>3D printer health</h1></div><div class="connection"><p id="updated" data-status="connecting">Connecting to dashboard…</p></div></header>
     <div class="cloud-status"><p id="cloud-state" class="help">Connecting to Flashforge cloud…</p><button id="cloud-reconnect" class="text-button">Reconnect cloud</button></div>
     <section class="summary" aria-label="Workshop overview">
       <div><strong id="online">—<small> / 4</small></strong><span>Connected</span></div>
@@ -21,9 +21,10 @@
     </section>
     <div class="view-tabs" role="tablist" aria-label="Workshop views">
       <button id="tab-home" type="button" role="tab" aria-selected="true" aria-controls="panel-home">Home</button>
-      <button id="tab-dashboard" type="button" role="tab" aria-selected="false" aria-controls="panel-dashboard" tabindex="-1">Printer dashboard</button>
+      <button id="tab-dashboard" type="button" role="tab" aria-selected="false" aria-controls="panel-dashboard" tabindex="-1">3D printers</button>
       <button id="tab-history" type="button" role="tab" aria-selected="false" aria-controls="panel-history" tabindex="-1">Estimated vs actual</button>
       <button id="tab-job" type="button" role="tab" aria-selected="false" aria-controls="panel-job" tabindex="-1" hidden>Check a sliced job</button>
+      <button id="tab-laser" type="button" role="tab" aria-selected="false" aria-controls="panel-laser" tabindex="-1">Laserjets</button>
     </div>
     <p id="connection-error" class="notice" role="alert" hidden></p>
     <p id="storage-error" class="notice" role="alert" hidden></p>
@@ -31,9 +32,17 @@
       <div class="home-heading"><h2>Finishing next</h2><p class="help">Shortest estimated time first. Printers without an active estimate appear below.</p></div>
       <p id="home-maintenance" class="help">Checking maintenance…</p>
       <ol id="completion-order" class="completion-order" aria-label="Printers by estimated completion"><li>Loading your printers…</li></ol>
+      <section class="home-queues" aria-labelledby="laser-queues-heading">
+        <div class="home-heading"><h2 id="laser-queues-heading">Laserjet queues</h2><p class="help">Jobs received by each printer · Refreshes every 10 seconds. Jobs still waiting on a computer may not appear yet.</p></div>
+        <div id="laser-queues" class="grid"><p>Reading printer queues…</p></div>
+      </section>
     </section>
     <section id="panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard" tabindex="0" hidden>
     <section id="printers" class="grid" aria-label="Printers"><p>Loading your printers…</p></section>
+    </section>
+    <section id="panel-laser" role="tabpanel" aria-labelledby="tab-laser" tabindex="0" hidden>
+      <div class="home-heading"><h2>Brother laser printers</h2><p class="help">Status and supplies refresh every 30 seconds. Supply percentages appear only when reported.</p></div>
+      <section id="laser-printers" class="grid" aria-label="Brother laser printers"><p>Loading your laser printers…</p></section>
     </section>
     <section id="panel-history" class="job-inspector" role="tabpanel" aria-labelledby="tab-history" tabindex="0" hidden>
       <div class="maintenance-heading"><h2 id="history-heading">Estimated vs actual</h2><button id="add-print" class="secondary" hidden>Add past print</button></div>
@@ -48,7 +57,7 @@
       <p id="job-error" class="error-text" role="alert"></p>
       <div id="job-report" aria-live="polite"></div>
     </section>
-    <footer><span>Read-only monitoring · Live cloud status with local fallback</span><span>Temperatures: current / target °C</span></footer>
+    <footer><span>Read-only monitoring · Flashforge cloud and Brother local status</span><span id="temperature-note">Temperatures: current / target °C</span></footer>
   </main>
   <dialog id="timing-dialog">
     <form id="timing-form">

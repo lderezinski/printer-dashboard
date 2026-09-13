@@ -10,6 +10,10 @@ function selectView(tab, focus = false) {
     item.tabIndex = active ? 0 : -1;
     document.getElementById(item.getAttribute('aria-controls')).hidden = !active;
   }
+  const laserView = tab.id === 'tab-laser';
+  $('.summary').hidden = laserView;
+  $('.cloud-status').hidden = laserView;
+  $('#temperature-note').hidden = laserView;
   if (focus) tab.focus();
 }
 for (const tab of viewTabs) {
@@ -79,7 +83,7 @@ function renderHome(printers) {
   });
   const dueCount = printers.reduce((count, p) => count + p.maintenance.schedules.filter(task => task.due).length, 0);
   $('#maintenance-due').textContent = dueCount;
-  $('#home-maintenance').textContent = dueCount ? `${dueCount} maintenance ${dueCount === 1 ? 'task is' : 'tasks are'} due · Manage tasks in Printer dashboard.` : 'No maintenance tasks are due.';
+  $('#home-maintenance').textContent = dueCount ? `${dueCount} maintenance ${dueCount === 1 ? 'task is' : 'tasks are'} due · Manage tasks in 3D printers.` : 'No maintenance tasks are due.';
   $('#home-maintenance').className = dueCount ? 'home-maintenance-due' : 'help';
   $('#completion-order').innerHTML = ordered.map((p, index) => {
     const timed = hasEstimate(p);
@@ -89,6 +93,35 @@ function renderHome(printers) {
       <div class="completion-printer"><h3>${escape(p.name)}</h3><p>${escape(p.connected ? p.state : 'Unavailable')}</p>${p.connected && p.job ? `<p class="completion-job">${escape(p.job)}</p>` : ''}</div>
       <div class="completion-time"><span class="help">${timed ? 'Estimated remaining' : 'Completion estimate'}</span><strong>${timed ? time(p.remaining) : p.connected && p.rawState === 'ready' ? 'No active print' : 'Not available'}</strong>${finish ? `<p>Finish around ${escape(finish)}</p>` : ''}</div>
       <div class="completion-maintenance ${due.length ? 'due' : ''}"><strong>${due.length ? 'Maintenance due' : 'Maintenance'}</strong>${due.length ? `<ul>${due.map(task => `<li>${escape(task.name)}</li>`).join('')}</ul>` : `<p>${p.maintenance.schedules.length ? 'No tasks due' : 'No reminders set'}</p>`}</div></li>`;
+  }).join('');
+}
+function laserCard(p) {
+  const supply = s => {
+    const name = s.kind === 'toner' ? s.name.replace(/ Toner Cartridge$/i, '') : s.name;
+    const status = s.status === 'Some remaining · amount not reported' ? 'Some remaining' : s.status;
+    return `<li class="laser-supply ${s.low ? 'low' : ''}"><div class="supply-heading"><span class="supply-name"><span class="supply-dot ${escape(s.color)}" aria-hidden="true"></span>${escape(name)}</span><span>${escape(status)}</span></div>${s.percent !== null ? `<progress value="${s.percent}" max="100" aria-label="${escape(name)}: ${escape(status)}"></progress>` : ''}</li>`;
+  };
+  const toner = (p.supplies || []).filter(s => s.kind === 'toner');
+  const maintenance = (p.supplies || []).filter(s => s.kind === 'maintenance');
+  const body = p.connected ? `${p.alerts.length ? `<ul class="printer-error">${p.alerts.map(a => `<li>${escape(a)}</li>`).join('')}</ul>` : ''}
+    <div class="laser-readings"><div><span class="help">Printer display</span><strong>${escape(p.display || p.state)}</strong></div><div><span class="help">${escape(p.pageCountLabel)}</span><strong>${p.pageCount === null ? '—' : p.pageCount.toLocaleString()}</strong></div></div>
+    <h3 class="supply-title">Toner</h3>${toner.length ? `<ul class="laser-supplies">${toner.map(supply).join('')}</ul>` : '<p class="help">Toner levels are not reported.</p>'}
+    ${maintenance.length ? `<h3 class="supply-title">Drums & other supplies</h3><ul class="laser-supplies">${maintenance.map(supply).join('')}</ul>` : ''}
+    ${p.supplyMessage ? `<p class="help">${escape(p.supplyMessage)}</p>` : ''}`
+    : `<div class="empty"><p>${escape(p.message)}</p></div>`;
+  const seen = p.lastSeen ? `${p.connected ? 'Read' : 'Last reached'} ${new Date(p.lastSeen).toLocaleTimeString()}` : '';
+  return `<article class="card laser-card"><div class="card-top"><div><h2>${escape(p.name)}</h2><p class="model">${p.color ? 'Color printer' : 'Monochrome all-in-one'}</p></div><span class="badge ${escape(p.health)}">${escape(p.state)}</span></div><div class="card-body">${body}</div><div class="card-bottom"><span>${escape(p.host || 'Connection not set')}${seen ? `<br>${escape(seen)}` : ''}</span><button class="text-button" data-settings="${escape(p.id)}">Settings</button></div></article>`;
+}
+function renderLaserQueues(printers) {
+  $('#laser-queues').innerHTML = printers.map(p => {
+    const q = p.queue;
+    const jobs = q?.jobs || [];
+    const label = q?.available ? jobs.length ? `${q.limited ? 'At least ' : ''}${jobs.length} ${jobs.length === 1 ? 'job' : 'jobs'}` : 'Queue empty' : 'Queue unavailable';
+    const progress = job => job.completed !== null ? `${job.completed}${job.total !== null ? ` / ${job.total}` : ''} ${job.unit} printed` : job.total !== null ? `${job.total} ${job.unit}` : 'Page count not reported';
+    const body = !q?.available ? `<p class="help">${escape(q?.message || 'Waiting for queue status…')}</p>`
+      : jobs.length ? `<ol class="queue-jobs">${jobs.map(job => `<li><div class="queue-job-heading"><strong>${escape(job.name)}</strong><span class="badge ${escape(job.health)}">${escape(job.state)}</span></div><p class="help">Job ${job.id} · ${escape(progress(job))}</p></li>`).join('')}</ol>${q.limited ? '<p class="help">Showing the first 100 jobs reported by the printer.</p>' : ''}`
+      : '<p class="queue-empty">No queued jobs</p>';
+    return `<article class="card queue-card"><div class="card-top"><h3>${escape(p.name)}</h3><span class="help">${escape(label)}</span></div><div class="card-body">${body}</div><div class="card-bottom"><span>${escape(p.host || 'Not configured')}</span><span>${q?.checkedAt ? `${q.available ? 'Read' : 'Checked'} ${escape(new Date(q.checkedAt).toLocaleTimeString())}` : 'Waiting for first reading'}</span></div></article>`;
   }).join('');
 }
 async function refresh() {
@@ -104,6 +137,7 @@ async function refresh() {
     const printers = data.printers;
     latestPrinters = printers;
     renderHome(printers);
+    renderLaserQueues(data.laserPrinters || []);
     const cloudCount = printers.filter(p => p.connected && p.transport?.startsWith('Flashforge cloud')).length;
     $('#cloud-state').textContent = data.cloud?.connected && cloudCount ? '' : data.cloud?.message || 'Cloud connection unavailable.';
     latestHistory = data.history || [];
@@ -111,6 +145,7 @@ async function refresh() {
     const focused = document.activeElement?.dataset?.settings;
     const focusedMaintenance = document.activeElement?.dataset?.maintenance;
     $('#printers').innerHTML = printers.map(card).join('');
+    $('#laser-printers').innerHTML = data.laserPrinters ? data.laserPrinters.map(laserCard).join('') : '<p class="help">Restart the dashboard service to load laser printer status.</p>';
     if (focused && !dialog.open) document.querySelector(`[data-settings="${focused}"]`)?.focus({ preventScroll: true });
     if (focusedMaintenance && !maintenanceDialog.open) document.querySelector(`[data-maintenance="${focusedMaintenance}"]`)?.focus({ preventScroll: true });
     $('#online').innerHTML = `${printers.filter(p => p.connected).length}<small> / 4</small>`;
@@ -136,16 +171,17 @@ async function refresh() {
     refreshing = false;
   }
 }
-$('#printers').addEventListener('click', async event => {
+async function openPrinterSettings(event) {
   const button = event.target.closest('[data-settings]');
   if (!button) return;
   selected = button.dataset.settings;
   const printerId = selected;
   form.reset();
-  $('#settings-title').textContent = `${({ ad5m: 'AD5M', a5mp: 'A5MP', c5: 'C5', c5p: 'C5P' })[selected]} connection`;
+  const laser = ['mfc_l2710dw', 'hl_l3270cdw'].includes(selected);
+  $('#settings-title').textContent = `${({ ad5m: 'AD5M', a5mp: 'A5MP', c5: 'C5', c5p: 'C5P', mfc_l2710dw: 'MFC-L2710DW', hl_l3270cdw: 'HL-L3270CDW' })[selected]} connection`;
   $('#form-error').textContent = '';
   $('#save').disabled = true;
-  $('#connection-help').textContent = 'Keep cloud enabled. Cloud status uses your signed-in Flash Studio session on this Mac. The IP address matches each cloud report to its printer. Adventurers also have a local fallback.';
+  $('#connection-help').textContent = laser ? 'Enter this Brother printer’s LAN IP address. Local monitoring requires SNMP read access with the community name public. No Brother cloud account is needed.' : 'Keep cloud enabled. Cloud status uses your signed-in Flash Studio session on this Mac. The IP address matches each cloud report to its printer. Adventurers also have a local fallback.';
   dialog.showModal();
   try {
     const data = await api(`/api/printers/${printerId}/settings`);
@@ -153,7 +189,9 @@ $('#printers').addEventListener('click', async event => {
     $('#host').value = data.host;
     $('#save').disabled = false;
   } catch { $('#form-error').textContent = 'Could not load settings. Check that the dashboard service is running.'; }
-});
+}
+$('#printers').addEventListener('click', openPrinterSettings);
+$('#laser-printers').addEventListener('click', openPrinterSettings);
 function close() { dialog.close(); selected = null; form.reset(); }
 $('#close').addEventListener('click', close);
 $('#cancel').addEventListener('click', close);

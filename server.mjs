@@ -7,6 +7,8 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { MODELS, validateConfig, readPrinter } from './printer.mjs';
 import { readTcpPrinter } from './tcp-printer.mjs';
+import { LASER_MODELS, readBrotherPrinter } from './brother.mjs';
+import { readPrinterQueue } from './printer-queue.mjs';
 import { createRecord, upgradeRecord, setBaseline, alignInitialReminders, accrue, setSchedule, markServiced, maintenanceStatus } from './maintenance.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
@@ -36,6 +38,54 @@ let config = {};
 try { config = JSON.parse(await readFile(configFile, 'utf8')); }
 catch (error) { if (error.code !== 'ENOENT') throw new Error('Cannot read data/printers.json. Repair this file before starting.'); }
 for (const printer of MODELS) config[printer.id] = validateConfig(config[printer.id] || { host: printer.defaultHost });
+for (const printer of LASER_MODELS) config[printer.id] = validateConfig(config[printer.id] || {});
+const laserSamples = new Map();
+const laserQueues = new Map();
+let queuesPolling = false;
+async function pollLaserQueues() {
+  if (queuesPolling) return;
+  queuesPolling = true;
+  try {
+    await Promise.all(LASER_MODELS.map(async printer => {
+      const settings = config[printer.id];
+      if (!settings.host) return;
+      let queue;
+      try { queue = await readPrinterQueue(settings, printer); }
+      catch (error) { queue = { available: false, jobs: [], checkedAt: new Date().toISOString(), message: error.name === 'TimeoutError' || error.name === 'TypeError' ? 'Cannot reach the printer queue. Check its power and connection.' : error.message }; }
+      if (settings === config[printer.id]) laserQueues.set(printer.id, queue);
+    }));
+  } finally { queuesPolling = false; }
+}
+const queueInterval = setInterval(pollLaserQueues, 10000);
+queueInterval.unref();
+void pollLaserQueues();
+let laserPolling = false;
+async function pollLaserPrinters() {
+  if (laserPolling) return;
+  laserPolling = true;
+  try {
+    await Promise.all(LASER_MODELS.map(async printer => {
+      const settings = config[printer.id];
+      if (!settings.host) return;
+      const previous = laserSamples.get(printer.id);
+      let sample;
+      try {
+        sample = { ...await readBrotherPrinter(settings, printer), connected: true, lastSeen: new Date().toISOString(), message: '' };
+      } catch (error) {
+        sample = { connected: false, state: 'Unavailable', health: 'unknown', lastSeen: previous?.lastSeen || null, message: error.message };
+      }
+      if (settings === config[printer.id]) laserSamples.set(printer.id, sample);
+    }));
+  } finally { laserPolling = false; }
+}
+function laserPrinters() {
+  return LASER_MODELS.map(printer => ({ ...printer, host: config[printer.id].host,
+    queue: laserQueues.get(printer.id) || { available: false, jobs: [], message: config[printer.id].host ? 'Reading printer queue…' : 'Set the printer’s IP address in Laserjets → Settings.' },
+    ...(laserSamples.get(printer.id) || { connected: false, state: config[printer.id].host ? 'Connecting' : 'Not configured', health: 'unknown', message: config[printer.id].host ? 'Waiting for the first reading.' : 'Add the printer’s IP address in Settings.' }) }));
+}
+const laserInterval = setInterval(pollLaserPrinters, 30000);
+laserInterval.unref();
+void pollLaserPrinters();
 const samples = new Map();
 const observations = new Map();
 const cloud = new CloudMonitor(() => config);
@@ -127,7 +177,7 @@ const server = http.createServer(async (req, res) => {
   if (accessError) return json(res, 403, { error: accessError });
   const url = new URL(req.url, `http://127.0.0.1:${port}`);
   try {
-    if (req.method === 'GET' && url.pathname === '/api/printers') return json(res, 200, { capabilities: { localTools: canUseLocalTools(req, port) }, cloud: cloud.status, printers: printers(), checkedAt: new Date().toISOString(), storageError: [storageError, historyStorageError].filter(Boolean).join(' '), history: history.runs.map(timingView).reverse() });
+    if (req.method === 'GET' && url.pathname === '/api/printers') return json(res, 200, { capabilities: { localTools: canUseLocalTools(req, port) }, cloud: cloud.status, printers: printers(), laserPrinters: laserPrinters(), checkedAt: new Date().toISOString(), storageError: [storageError, historyStorageError].filter(Boolean).join(' '), history: history.runs.map(timingView).reverse() });
     if (req.method === 'POST' && url.pathname === '/api/cloud/reconnect') { cloud.reconnect(); return json(res, 200, { reconnecting: true }); }
     const historyMatch = url.pathname.match(/^\/api\/history\/([a-f0-9-]{36})$/);
     if ((req.method === 'POST' && url.pathname === '/api/history') || (req.method === 'PUT' && historyMatch)) {
@@ -175,7 +225,7 @@ const server = http.createServer(async (req, res) => {
       finally { maintenanceSaving = false; }
       return json(res, 200, { saved: true });
     }
-    const match = url.pathname.match(/^\/api\/printers\/(ad5m|a5mp|c5|c5p)\/settings$/);
+    const match = url.pathname.match(/^\/api\/printers\/(ad5m|a5mp|c5|c5p|mfc_l2710dw|hl_l3270cdw)\/settings$/);
     if (match && req.method === 'GET') {
       const settings = config[match[1]] || {};
       return json(res, 200, { host: settings.host || '', serialNumber: settings.serialNumber || '', hasAccessCode: Boolean(settings.checkCode) });
@@ -197,10 +247,14 @@ const server = http.createServer(async (req, res) => {
         await rename(`${configFile}.tmp`, configFile);
         config = next;
         samples.delete(match[1]);
+        laserSamples.delete(match[1]);
+        laserQueues.delete(match[1]);
         observations.delete(match[1]);
         historyObservations.delete(match[1]);
       } finally { saving = false; }
       void poll();
+      void pollLaserPrinters();
+      void pollLaserQueues();
       return json(res, 200, { saved: true });
     }
     if (req.method === 'GET' && assets.has(url.pathname)) {
@@ -218,6 +272,6 @@ server.listen(port, '0.0.0.0', () => {
   console.log(`Flashforge Health on this Mac: http://localhost:${port}`);
   for (const address of lanAddresses()) console.log(`Flashforge Health on your LAN: http://${address}:${port}`);
 });
-function stop() { cloud.stop(); clearInterval(interval); server.close(); void saveMaintenance().catch(() => {}); void saveHistory().catch(() => {}); }
+function stop() { cloud.stop(); clearInterval(interval); clearInterval(laserInterval); clearInterval(queueInterval); server.close(); void saveMaintenance().catch(() => {}); void saveHistory().catch(() => {}); }
 process.on('SIGINT', stop);
 process.on('SIGTERM', stop);

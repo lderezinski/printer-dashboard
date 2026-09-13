@@ -14,6 +14,16 @@
     "serialNumber": "",
     "checkCode": ""
   },
+  "mfc_l2710dw": {
+    "host": "192.168.1.105",
+    "serialNumber": "",
+    "checkCode": ""
+  },
+  "hl_l3270cdw": {
+    "host": "192.168.1.106",
+    "serialNumber": "",
+    "checkCode": ""
+  },
   "c5p": {
     "host": "192.168.1.104",
     "serialNumber": "",

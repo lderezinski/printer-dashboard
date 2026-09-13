@@ -30,6 +30,16 @@ Both Adventurers have a local fallback. The AD5M’s authenticated-identity HTTP
 
 The Node service listens on IPv4 port 3000 and accepts loopback or private-network clients. Host checks permit only localhost and this Mac's current private IPv4 addresses; browser requests must use the same origin. Credentials and private data files are never served as static assets. Set `FLASHFORGE_CLOUD=off` when running isolated local tests that must not use the account session.
 
+## Brother laser printer status
+
+The **Laser printer status** tab monitors Brother MFC-L2710DW and HL-L3270CDW printers on your LAN. Set each address using **Settings** on its card; addresses are saved in the ignored `data/printers.json` under `mfc_l2710dw` and `hl_l3270cdw`. The sanitized `data/printers.example.json` includes both models. New checkouts have no Brother addresses configured until you supply them.
+
+Monitoring uses read-only SNMP v2c queries on UDP port 161 with the community name `public`, every 30 seconds. It reads the model before accepting status, so swapped or incorrect addresses show a model mismatch. These printers respond to GET/GETNEXT; GETBULK timed out during hardware verification. No print, configuration, or SNMP SET commands are sent. This feature runs on the existing local Node server and needs no Brother cloud account.
+
+Cards show the printer display (including Sleep), printing state, detected errors, lifetime sheet/impression counters, toner availability, and available drum/belt/waste-container readings. Unknown levels remain unknown: `-3` means some supply or receptacle space remains, not a percentage. Drum/belt percentages are calculated only from a nonnegative level and a positive maximum. Disconnected printers hide live readings and show the last successful contact. Brother devices do not enter the 3D print history or printing-hour maintenance records.
+
+The bottom of **Home** shows **Laserjet queues**, polling each printer's IPP endpoint on port 631 every 10 seconds. It verifies the reported model and requests only active jobs with `Get-Printer-Attributes` and `Get-Jobs`. Job names, queued/held/printing states, and reported sheet or impression counts are shown; completed jobs are excluded. Empty queues and unavailable queues are displayed separately. These are jobs already received by the printers; jobs held in a computer's local print queue may not appear until submitted. Queue details stay in memory, and no jobs are created, cancelled, or changed. Lists are limited to the first 100 returned jobs.
+
 ## What is shown
 
 - Connection status, state, reported error code, job name, progress and layer count.
