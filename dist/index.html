@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A local health dashboard for your four Flashforge printers.">
+  <title>Flashforge · Printer health</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <main>
+    <header><div><p class="eyebrow">FLASHFORGE / Linda's Office</p><h1>Printer health</h1></div><div class="connection"><p id="updated" data-status="connecting">Connecting to dashboard…</p></div></header>
+    <div class="cloud-status"><p id="cloud-state" class="help">Connecting to Flashforge cloud…</p><button id="cloud-reconnect" class="text-button">Reconnect cloud</button></div>
+    <section class="summary" aria-label="Workshop overview">
+      <div><strong id="online">—<small> / 4</small></strong><span>Connected</span></div>
+      <div><strong id="printing">—</strong><span>Printing</span></div>
+      <div><strong id="attention">—</strong><span>Need attention</span></div>
+      <div><strong id="unavailable">—</strong><span>Unavailable</span></div>
+      <div><strong id="maintenance-due">—</strong><span>Maintenance due</span></div>
+    </section>
+    <div class="view-tabs" role="tablist" aria-label="Workshop views">
+      <button id="tab-home" type="button" role="tab" aria-selected="true" aria-controls="panel-home">Home</button>
+      <button id="tab-dashboard" type="button" role="tab" aria-selected="false" aria-controls="panel-dashboard" tabindex="-1">Printer dashboard</button>
+      <button id="tab-history" type="button" role="tab" aria-selected="false" aria-controls="panel-history" tabindex="-1">Estimated vs actual</button>
+      <button id="tab-job" type="button" role="tab" aria-selected="false" aria-controls="panel-job" tabindex="-1" hidden>Check a sliced job</button>
+    </div>
+    <p id="connection-error" class="notice" role="alert" hidden></p>
+    <p id="storage-error" class="notice" role="alert" hidden></p>
+    <section id="panel-home" role="tabpanel" aria-labelledby="tab-home" tabindex="0">
+      <div class="home-heading"><h2>Finishing next</h2><p class="help">Shortest estimated time first. Printers without an active estimate appear below.</p></div>
+      <p id="home-maintenance" class="help">Checking maintenance…</p>
+      <ol id="completion-order" class="completion-order" aria-label="Printers by estimated completion"><li>Loading your printers…</li></ol>
+    </section>
+    <section id="panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard" tabindex="0" hidden>
+    <section id="printers" class="grid" aria-label="Printers"><p>Loading your printers…</p></section>
+    </section>
+    <section id="panel-history" class="job-inspector" role="tabpanel" aria-labelledby="tab-history" tabindex="0" hidden>
+      <div class="maintenance-heading"><h2 id="history-heading">Estimated vs actual</h2><button id="add-print" class="secondary" hidden>Add past print</button></div>
+      <p class="help">Attach the original slicer estimate to a print. Actual time includes pauses. Partial observations and uncertain outcomes stay out of comparisons until you supply the missing details.</p>
+      <p id="history-summary" class="help"></p>
+      <div id="print-history"><p>Loading print history…</p></div>
+    </section>
+    <section id="panel-job" class="job-inspector" role="tabpanel" aria-labelledby="tab-job" tabindex="0" hidden>
+      <h2 id="job-heading">Check a sliced job</h2>
+      <p class="help">Read material, color, and quantity requirements from a Flash Studio G-code export. The file stays in your browser; nothing is sent to a printer.</p>
+      <label>Choose G-code<input type="file" id="gcode-file" accept=".gcode"></label>
+      <p id="job-error" class="error-text" role="alert"></p>
+      <div id="job-report" aria-live="polite"></div>
+    </section>
+    <footer><span>Read-only monitoring · Live cloud status with local fallback</span><span>Temperatures: current / target °C</span></footer>
+  </main>
+  <dialog id="timing-dialog">
+    <form id="timing-form">
+      <div class="dialog-heading"><h2 id="timing-title">Print timing</h2><button type="button" id="timing-close" class="icon-button" aria-label="Close print timing">×</button></div>
+      <p id="timing-job" class="help"></p>
+      <div id="manual-print-fields">
+        <label>Printer<select id="timing-printer"><option value="ad5m">AD5M</option><option value="a5mp">A5MP</option><option value="c5">C5</option><option value="c5p">C5P</option></select></label>
+        <label>Job name<input id="timing-name" maxlength="255"></label>
+        <label>Print ended<input id="timing-date" type="datetime-local"></label>
+      </div>
+      <label>Read estimate from this print’s G-code<input type="file" id="timing-file" accept=".gcode"></label>
+      <p id="timing-source" class="help">Choose the sliced file for this specific print, or enter its estimate below.</p>
+      <label>Slicer estimate (hours:minutes:seconds)<input id="timing-estimate" placeholder="7:37:55" autocomplete="off"></label>
+      <label>Actual total from your records (hours:minutes:seconds)<input id="timing-actual" placeholder="Optional, for missing or corrected timing" autocomplete="off"></label>
+      <p id="timing-help" class="help"></p>
+      <label>Outcome<select id="timing-outcome"><option value="">Use observed outcome</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option><option value="failed">Failed</option><option value="unknown">Unknown</option></select></label>
+      <p id="timing-error" class="error-text" role="alert"></p>
+      <div class="dialog-actions"><button id="timing-save" type="submit">Save timing</button></div>
+    </form>
+  </dialog>
+  <dialog id="settings">
+    <form id="settings-form">
+      <div class="dialog-heading"><h2 id="settings-title">Connect printer</h2><button type="button" id="close" class="icon-button" aria-label="Close settings">×</button></div>
+      <p id="connection-help" class="help"></p>
+      <label>LAN IP address<input id="host" name="host" placeholder="192.168.1.50" inputmode="decimal" autocomplete="off" required maxlength="128"></label>
+      <p class="help">Saved on this Mac. The app only requests printer status.</p>
+      <p id="form-error" class="error-text" role="alert"></p>
+      <div class="dialog-actions"><button type="button" id="cancel" class="secondary">Cancel</button><button id="save" type="submit">Save connection</button></div>
+    </form>
+  </dialog>
+  <dialog id="maintenance-dialog">
+    <form id="maintenance-form">
+      <div class="dialog-heading"><h2 id="maintenance-title">Maintenance reminder</h2><button type="button" id="maintenance-close" class="icon-button" aria-label="Close maintenance">×</button></div>
+      <p class="help">Remind me when either limit is reached. Choose intervals from your printer’s maintenance guidance. Leave one blank to use only the other.</p>
+      <label>Task<input id="maintenance-name" required maxlength="100" placeholder="For example: inspect and lubricate rails"></label>
+      <div class="intervals"><label>Printing hours<input id="maintenance-hours" type="number" min="0.1" max="100000" step="0.1" placeholder="Optional"></label><label>Calendar days<input id="maintenance-days" type="number" min="1" max="36500" step="1" placeholder="Optional"></label></div>
+      <p id="maintenance-help" class="help"></p>
+      <p class="help">A new reminder starts today. Editing preserves its current counter. “Mark serviced” records today’s service and starts this task’s intervals again. Other tasks keep their counters.</p>
+      <p id="maintenance-error" class="error-text" role="alert"></p>
+      <div class="dialog-actions"><button type="button" id="mark-serviced" class="secondary">Mark serviced today</button><button id="maintenance-save" type="submit">Save reminder</button></div>
+    </form>
+  </dialog>
+</body>
+</html>

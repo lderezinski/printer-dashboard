@@ -1,0 +1,22 @@
+{
+  "ad5m": {
+    "host": "192.168.1.101",
+    "serialNumber": "",
+    "checkCode": ""
+  },
+  "a5mp": {
+    "host": "192.168.1.102",
+    "serialNumber": "",
+    "checkCode": ""
+  },
+  "c5": {
+    "host": "192.168.1.103",
+    "serialNumber": "",
+    "checkCode": ""
+  },
+  "c5p": {
+    "host": "192.168.1.104",
+    "serialNumber": "",
+    "checkCode": ""
+  }
+}

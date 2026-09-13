@@ -1,0 +1,75 @@
+{
+  "filename": "example-four-color-job.gcode",
+  "generatedBy": "Flash Studio 1.7.17 on 2026-01-01 at 00:00:00",
+  "printer": "Flashforge Creator 5",
+  "printerProfile": "Flashforge Creator 5 0.4 nozzle",
+  "printProfile": "0.08mm Standard @FF C5",
+  "layerHeight": 0.08,
+  "layers": 308,
+  "estimatedTime": "7h 37m 55s",
+  "channels": [
+    {
+      "channel": 1,
+      "material": "PETG",
+      "color": "#000000",
+      "profile": "Flashforge PETG Pro @FF C5",
+      "vendor": "Flashforge",
+      "diameter": 1.75,
+      "nozzle": 0.4,
+      "summaryGrams": 24.51,
+      "recordGrams": 23.83,
+      "planningGrams": 24.51
+    },
+    {
+      "channel": 2,
+      "material": "PETG",
+      "color": "#999999",
+      "profile": "Flashforge PETG Pro @FF C5",
+      "vendor": "Flashforge",
+      "diameter": 1.75,
+      "nozzle": 0.4,
+      "summaryGrams": 10.31,
+      "recordGrams": 10.16,
+      "planningGrams": 10.31
+    },
+    {
+      "channel": 3,
+      "material": "PETG",
+      "color": "#FD8008",
+      "profile": "Flashforge PETG Pro @FF C5",
+      "vendor": "Flashforge",
+      "diameter": 1.75,
+      "nozzle": 0.4,
+      "summaryGrams": 23.39,
+      "recordGrams": 22.49,
+      "planningGrams": 23.39
+    },
+    {
+      "channel": 4,
+      "material": "PETG",
+      "color": "#FD8008",
+      "profile": "Flashforge PETG Pro @FF C5",
+      "vendor": "Flashforge",
+      "diameter": 1.75,
+      "nozzle": 0.4,
+      "summaryGrams": 5.11,
+      "recordGrams": 4.79,
+      "planningGrams": 5.11
+    }
+  ],
+  "totalGrams": 63.32,
+  "summaryTotal": 63.32,
+  "recordTotal": 61.27,
+  "metadataComplete": true,
+  "issues": [],
+  "warnings": [
+    "Channel 1: summary 24.51 g versus filament record 23.83 g.",
+    "Channel 2: summary 10.31 g versus filament record 10.16 g.",
+    "Channel 3: summary 23.39 g versus filament record 22.49 g.",
+    "Channel 4: summary 5.11 g versus filament record 4.79 g.",
+    "Some channels use the same color. Keep each channel separate until its physical spool and tool mapping are confirmed."
+  ],
+  "inventoryVerified": false,
+  "readyToPrint": false,
+  "limitation": "Metadata inspection only. Loaded spools, measured quantities, purge accounting, reserve, and printer submission are not verified."
+}
