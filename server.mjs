@@ -1,6 +1,8 @@
 import http from 'node:http';
 import { lanAddresses, requestAccessError, canUseLocalTools } from './network.mjs';
 import { CloudMonitor } from './cloud.mjs';
+import { ObicoMonitor } from './obico.mjs';
+import { GapMonitor } from './gap.mjs';
 import { createHistory, observeHistory, timingView, setTiming, addManualRun } from './history.mjs';
 import { readFile, mkdir, writeFile, rename } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -151,6 +153,16 @@ const interval = setInterval(poll, 5000);
 interval.unref();
 void poll();
 
+const cameras = Object.fromEntries(['ad5m', 'a5mp', 'c5'].map(id => [id,
+  new ObicoMonitor(root, () => samples.get(id), () => history.runs.findLast(r => r.printerId === id && r.status === 'active')?.id || samples.get(id)?.job || null, id),
+]));
+const heightMonitor = new GapMonitor(root, () => samples.get('a5mp'), cameras.a5mp.getJobKey, cameras.a5mp.enabled);
+await heightMonitor.load();
+cameras.a5mp.gap = heightMonitor;
+heightMonitor.start();
+let heightSaving = false;
+for (const camera of Object.values(cameras)) camera.start();
+
 function printers() {
   return MODELS.map(printer => {
     const settings = config[printer.id] || {};
@@ -171,13 +183,41 @@ async function body(req) {
   try { return JSON.parse(content); } catch { throw new Error('Invalid settings request.'); }
 }
 const assets = new Map([['/', ['index.html', 'text/html']], ['/app.js', ['app.js', 'text/javascript']], ['/gcode.js', ['gcode.js', 'text/javascript']], ['/style.css', ['style.css', 'text/css']]]);
+assets.set('/height.js', ['height.js', 'text/javascript']);
 const server = http.createServer(async (req, res) => {
   // Exact Host/Origin checks restrict dashboard access to this Mac and its LAN.
   const accessError = requestAccessError(req, port);
   if (accessError) return json(res, 403, { error: accessError });
   const url = new URL(req.url, `http://127.0.0.1:${port}`);
   try {
-    if (req.method === 'GET' && url.pathname === '/api/printers') return json(res, 200, { capabilities: { localTools: canUseLocalTools(req, port) }, cloud: cloud.status, printers: printers(), laserPrinters: laserPrinters(), checkedAt: new Date().toISOString(), storageError: [storageError, historyStorageError].filter(Boolean).join(' '), history: history.runs.map(timingView).reverse() });
+    if (req.method === 'GET' && url.pathname === '/api/height/a5mp') return json(res, 200, heightMonitor.view());
+    const heightReference = url.pathname.match(/^\/api\/height\/a5mp\/reference\/([a-f0-9-]{36})$/);
+    if (req.method === 'GET' && (url.pathname === '/api/height/a5mp/image' || heightReference)) {
+      const frozen = heightMonitor.frozen;
+      const image = heightReference ? (frozen?.id === heightReference[1] && Date.now()-frozen.createdAt <= 900000 ? frozen.image : null) : heightMonitor.image;
+      if (!image) return json(res, 404, { error: 'No current reference image. Capture a fresh reference.' });
+      res.writeHead(200, { ...headers, 'Content-Type': 'image/jpeg' });
+      return res.end(image);
+    }
+    if ((req.method === 'POST' && url.pathname === '/api/height/a5mp/reference') || (req.method === 'PUT' && url.pathname === '/api/height/a5mp/calibration')) {
+      if (!canUseLocalTools(req, port)) return json(res, 403, { error: 'Mark the gap reference at localhost on the dashboard Mac.' });
+      if (req.method === 'POST') return json(res, 200, heightMonitor.freeze());
+      if (!req.headers['content-type']?.startsWith('application/json')) return json(res, 415, { error: 'Send JSON calibration data.' });
+      const value = await body(req);
+      if (heightSaving) return json(res, 409, { error: 'Calibration is already being saved.' });
+      heightSaving = true;
+      try { await heightMonitor.calibrate(value); }
+      finally { heightSaving = false; }
+      return json(res, 200, { saved: true, height: heightMonitor.view() });
+    }
+    if (req.method === 'GET' && url.pathname === '/api/printers') return json(res, 200, { capabilities: { localTools: canUseLocalTools(req, port) }, camera: cameras.ad5m.view(), cameras: Object.fromEntries(Object.entries(cameras).map(([id, camera]) => [id, camera.view()])), cloud: cloud.status, printers: printers(), laserPrinters: laserPrinters(), checkedAt: new Date().toISOString(), storageError: [storageError, historyStorageError].filter(Boolean).join(' '), history: history.runs.map(timingView).reverse() });
+    const cameraMatch = url.pathname.match(/^\/api\/camera\/(ad5m|a5mp|c5)\/image$/);
+    if (req.method === 'GET' && cameraMatch) {
+      const camera = cameras[cameraMatch[1]];
+      if (!camera.image) return json(res, 404, { error: 'No camera image has been analyzed yet.' });
+      res.writeHead(200, { ...headers, 'Content-Type': 'image/jpeg' });
+      return res.end(camera.image);
+    }
     if (req.method === 'POST' && url.pathname === '/api/cloud/reconnect') { cloud.reconnect(); return json(res, 200, { reconnecting: true }); }
     const historyMatch = url.pathname.match(/^\/api\/history\/([a-f0-9-]{36})$/);
     if ((req.method === 'POST' && url.pathname === '/api/history') || (req.method === 'PUT' && historyMatch)) {
@@ -272,6 +312,6 @@ server.listen(port, '0.0.0.0', () => {
   console.log(`Flashforge Health on this Mac: http://localhost:${port}`);
   for (const address of lanAddresses()) console.log(`Flashforge Health on your LAN: http://${address}:${port}`);
 });
-function stop() { cloud.stop(); clearInterval(interval); clearInterval(laserInterval); clearInterval(queueInterval); server.close(); void saveMaintenance().catch(() => {}); void saveHistory().catch(() => {}); }
+function stop() { heightMonitor.stop(); for (const camera of Object.values(cameras)) camera.stop(); cloud.stop(); clearInterval(interval); clearInterval(laserInterval); clearInterval(queueInterval); server.close(); void saveMaintenance().catch(() => {}); void saveHistory().catch(() => {}); }
 process.on('SIGINT', stop);
 process.on('SIGTERM', stop);

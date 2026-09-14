@@ -32,6 +32,35 @@
       <div class="home-heading"><h2>Finishing next</h2><p class="help">Shortest estimated time first. Printers without an active estimate appear below.</p></div>
       <p id="home-maintenance" class="help">Checking maintenance…</p>
       <ol id="completion-order" class="completion-order" aria-label="Printers by estimated completion"><li>Loading your printers…</li></ol>
+      <nav class="camera-links" aria-label="Camera checks"><a href="#height-heading">A5MP air printing</a><a href="#camera-heading">AD5M camera</a><a href="#camera-a5mp-heading">A5MP camera</a><a href="#camera-c5-heading">C5 camera</a></nav>
+      <section class="camera-monitor" aria-labelledby="height-heading">
+        <div class="camera-heading"><div><h2 id="height-heading">A5MP head-to-print gap check</h2><p class="help">Watches for persistent separation across a complete layer</p></div><span id="height-badge" class="badge unknown">Connecting</span></div>
+        <div class="camera-content">
+          <figure><img id="height-image" alt="A5MP close-up; markers show the visible nozzle tip and selected part edge when measurable" width="640" height="480" hidden><p id="height-placeholder" class="help">Waiting for a close-up while printing…</p><figcaption id="height-timestamp" class="help">No image yet.</figcaption></figure>
+          <div><p id="height-message" aria-live="polite">Connecting…</p><dl class="height-metrics"><div><dt>Visible gap</dt><dd id="height-expected">—</dd></div><div><dt>Views this layer</dt><dd id="height-measured">—</dd></div><div><dt>Last layer change</dt><dd id="height-gap">—</dd></div></dl><p id="height-layer" class="help"></p><p id="height-uncertainty" class="help"></p><p id="height-rule" class="help">Watches for a persistent gap between the print head and the print.</p><button id="height-calibrate" type="button" disabled>Mark nozzle &amp; part</button><p id="height-local" class="help">Mark the reference on this Mac at localhost:3000.</p><p class="help">Experimental: verify that the markers follow the head and print surface. Hidden or ambiguous edges cannot be measured. Inspect any gap alert; the printer keeps running.</p><ol id="height-history" class="camera-history" aria-label="Recent nozzle-gap checks"></ol></div>
+        </div>
+      </section>
+      <section class="camera-monitor" aria-labelledby="camera-heading">
+        <div class="camera-heading"><div><h2 id="camera-heading">AD5M camera check</h2><p class="help">Obico · Runs locally on this Mac</p></div><span id="camera-badge" class="badge unknown">Connecting</span></div>
+        <div class="camera-content">
+          <figure><img id="camera-image" alt="Last AD5M camera image analyzed by Obico; boxes mark possible spaghetti" width="1280" height="720" hidden><p id="camera-placeholder" class="help">Waiting for the first image…</p><figcaption id="camera-timestamp" class="help">No image analyzed yet.</figcaption></figure>
+          <div><p id="camera-message" aria-live="polite">Connecting to the local detector…</p><p id="camera-detail" class="help">Checks while the AD5M is printing.</p><p id="camera-air" class="help">Filament flow has not been checked.</p><p class="help">Looks for visible spaghetti. A clear result does not confirm filament is flowing. Inspect the print if you suspect a clog.</p><p class="help">Alerts appear here; the printer will keep running.</p><ol id="camera-history" class="camera-history" aria-label="Recent camera checks"></ol></div>
+        </div>
+      </section>
+      <section class="camera-monitor" aria-labelledby="camera-a5mp-heading">
+        <div class="camera-heading"><div><h2 id="camera-a5mp-heading">A5MP camera check</h2><p class="help">Obico · Runs locally on this Mac</p></div><span id="camera-a5mp-badge" class="badge unknown">Connecting</span></div>
+        <div class="camera-content">
+          <figure><img id="camera-a5mp-image" alt="Last A5MP camera image analyzed by Obico; boxes mark possible spaghetti" width="1280" height="720" hidden><p id="camera-a5mp-placeholder" class="help">Waiting for the first image…</p><figcaption id="camera-a5mp-timestamp" class="help">No image analyzed yet.</figcaption></figure>
+          <div><p id="camera-a5mp-message" aria-live="polite">Connecting to the local detector…</p><p id="camera-a5mp-detail" class="help">Checks while the A5MP is printing.</p><p id="camera-a5mp-air" class="help">Filament flow has not been checked.</p><p class="help">Looks for visible spaghetti. A clear result does not confirm filament is flowing. Inspect the print if you suspect a clog.</p><p class="help">Alerts appear here; the printer will keep running.</p><ol id="camera-a5mp-history" class="camera-history" aria-label="Recent camera checks"></ol></div>
+        </div>
+      </section>
+      <section class="camera-monitor" aria-labelledby="camera-c5-heading">
+        <div class="camera-heading"><div><h2 id="camera-c5-heading">C5 camera check</h2><p class="help">Obico · Runs locally on this Mac</p></div><span id="camera-c5-badge" class="badge unknown">Connecting</span></div>
+        <div class="camera-content">
+          <figure><img id="camera-c5-image" alt="Last C5 camera image analyzed by Obico; boxes mark possible spaghetti" width="1280" height="720" hidden><p id="camera-c5-placeholder" class="help">Waiting for the first image…</p><figcaption id="camera-c5-timestamp" class="help">No image analyzed yet.</figcaption></figure>
+          <div><p id="camera-c5-message" aria-live="polite">Connecting to the local detector…</p><p id="camera-c5-detail" class="help">Checks while the C5 is printing.</p><p id="camera-c5-air" class="help">Filament flow has not been checked.</p><p class="help">Looks for visible spaghetti. A clear result does not confirm filament is flowing. Inspect the print if you suspect a clog.</p><p class="help">Alerts appear here; the printer will keep running.</p><ol id="camera-c5-history" class="camera-history" aria-label="Recent camera checks"></ol></div>
+        </div>
+      </section>
       <section class="home-queues" aria-labelledby="laser-queues-heading">
         <div class="home-heading"><h2 id="laser-queues-heading">Laserjet queues</h2><p class="help">Jobs received by each printer · Refreshes every 10 seconds. Jobs still waiting on a computer may not appear yet.</p></div>
         <div id="laser-queues" class="grid"><p>Reading printer queues…</p></div>
@@ -59,6 +88,19 @@
     </section>
     <footer><span>Read-only monitoring · Flashforge cloud and Brother local status</span><span id="temperature-note">Temperatures: current / target °C</span></footer>
   </main>
+  <dialog id="height-dialog" aria-labelledby="height-dialog-title">
+    <form id="height-form">
+      <div class="dialog-heading"><h2 id="height-dialog-title">Mark the nozzle-to-part gap</h2><button type="button" id="height-close" class="icon-button" aria-label="Close gap reference">×</button></div>
+      <p id="height-reference-guide" class="help">Mark the head edge, the print directly below it, and a stationary feature on the printer frame. Use a healthy close-contact view.</p>
+      <p id="height-reference-info" class="help"></p>
+      <canvas id="height-canvas" width="640" height="480" aria-label="Calibration image. Select a landmark below, then click its position; coordinates can also be entered below."></canvas>
+      <p id="height-step" aria-live="polite">Select the nozzle tip.</p>
+      <div id="height-points"></div>
+      <p class="help">Checks compare repeated views near this nozzle position to reduce perspective changes. If the nozzle is hidden or the part edge changes shape, mark a new reference. Start a fresh reference for each print.</p>
+      <p id="height-form-error" class="form-error" role="alert"></p>
+      <div class="dialog-actions"><button id="height-reset" class="secondary" type="button">Reset points</button><button id="height-save" type="submit">Validate &amp; start checks</button></div>
+    </form>
+  </dialog>
   <dialog id="timing-dialog">
     <form id="timing-form">
       <div class="dialog-heading"><h2 id="timing-title">Print timing</h2><button type="button" id="timing-close" class="icon-button" aria-label="Close print timing">×</button></div>

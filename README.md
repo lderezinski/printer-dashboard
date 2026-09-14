@@ -30,6 +30,143 @@ Both Adventurers have a local fallback. The AD5M’s authenticated-identity HTTP
 
 The Node service listens on IPv4 port 3000 and accepts loopback or private-network clients. Host checks permit only localhost and this Mac's current private IPv4 addresses; browser requests must use the same origin. Credentials and private data files are never served as static assets. Set `FLASHFORGE_CLOUD=off` when running isolated local tests that must not use the account session.
 
+## Camera failure detection
+
+The Home tab shows separate **AD5M**, **A5MP**, and **C5 camera checks**, using
+their Tapo C120 feeds and Obico's official open-source ONNX model. Each analyzes
+a new frame about every 20–25 seconds while its own fresh printer status says
+`printing`. The camera addresses are AD5M `192.168.50.111`, A5MP `192.168.50.1011`,
+and C5 `192.168.50.113`. Each has an independent image, result, and job history.
+Results and the latest annotated image are available to the same local/LAN
+clients as the dashboard. Camera credentials never go to the browser.
+
+This is a local integration of Obico's detector, not the Obico phone app or
+cloud service. Images stay on this Mac and its dashboard clients. For each camera, the latest
+image and 12 recent results are held in memory and are cleared on restart.
+Each printer's Python worker starts automatically with its first active print
+and stops with the dashboard. Keep the Mac awake and dashboard running.
+
+Results distinguish **No spaghetti detected**, **Inspect image**, **Check print
+now**, **Waiting for printing**, and **Unavailable**. The timestamp always
+identifies the last analyzed image; it is a periodically refreshed still, not
+live video. A camera result expires after 60 seconds and printer status after
+15 seconds. Results from a previous print are discarded. Pauses, job changes,
+errors, and long gaps reset the repeated-detection counter.
+
+Alerts appear in Home and the Need attention count. No printer commands,
+automatic pauses, phone notifications, or emails are sent. An Obico box score
+of at least 0.3 requests inspection; three consecutive frames with a score of
+at least 0.6 produce a repeated-detection warning. These initial dashboard
+rules require tuning with real prints; they are not Obico Cloud's temporal
+algorithm or a probability that a print is good. Ornate shapes, supports,
+glare and printhead occlusion can cause false alarms or missed failures.
+**No spaghetti detected does not confirm extrusion.** During setup the
+user-reported A5MP no-extrusion image produced only a weak 0.117 detection,
+below this dashboard's inspection threshold.
+
+Dependencies and the 202 MB model are installed in ignored `data/` directories.
+For a fresh checkout on a compatible Python 3.11+ environment:
+
+```sh
+python3 -m venv data/obico-venv
+data/obico-venv/bin/python -m pip install -r requirements-obico.txt
+python3 setup-obico-model.py
+```
+
+Create owner-only `data/camera-ad5m.json`, `data/camera-a5mp.json`, and
+`data/camera-c5.json` with `host`, `username`, and `password`
+for the Tapo Camera Account. Use the camera's private IPv4 address; the worker
+reads `stream1` on port 554. Never commit that file. Restart the dashboard after
+changing it. Set `FLASHFORGE_CAMERA=off` to disable camera monitoring, including
+for isolated server tests. See `vendor/obico/README.md` for the upstream commit,
+AGPL license, model provenance, and integration details. Model SHA-256 is
+verified before inference. Each worker uses two CPU inference threads.
+
+Read-only hardware checks also captured the built-in MJPEG feeds on A5MP, C5,
+and C5P at `http://PRINTER_IP:8080/?action=stream`, with existing printer settings.
+The AD5M's corresponding endpoint was unavailable. A5MP's built-in feed now
+also supplies the separate experimental nozzle-gap check below. C5 and C5P's
+built-in feeds were tested for access only. Obico still uses the three Tapo
+cameras listed above; its no-spaghetti result never establishes extrusion.
+
+### A5MP experimental head-to-print gap check
+
+Home starts with **Finishing next**. The **A5MP head-to-print gap check** below
+uses the built-in close-up camera.
+An independent worker samples about every 3–4 seconds while fresh printer
+status says printing; Obico's slower inference does not delay these checks.
+This replaces the earlier expected-height/millimeter calibration workflow.
+
+For the **dark-chess calibration** job on the A5MP, the temporary
+`light-head-dark-chess-v1` rule uses the light-gray print head and the silk-black
+chess piece. Their close spacing in the user-confirmed healthy reference is
+normal. A gap of at least 3 pixels **beyond that healthy spacing**, present in
+all comparable samples across a completed layer, raises **Inspect print** for
+possible air printing. A constant open gap counts; widening and recognizable
+printer background are not required. The tolerance excludes small tracking jitter
+and the normal distance between the housing and the extrusion point.
+
+This profile validates a bright head patch and a dark part patch (allowing silk
+highlights), then tracks their separation at the reference pose. It does not
+recognize chess shapes or infer extrusion. Hidden, changed, or ambiguous features
+remain unknown. It is restricted to the exact saved Dark Pawn job filename and
+the calibrated print run; other jobs keep the generic gap rule. The saved healthy
+reference has been selected for this run. A new run needs a fresh healthy
+reference, marking the lower gray head edge, the dark piece immediately below,
+and a stationary frame feature away from the head. Live failure accuracy remains
+unvalidated.
+
+Open `http://localhost:3000` on this Mac and choose **Mark nozzle & part**.
+For the dark chess profile, use the healthy head/part marks described above.
+For other jobs, mark the actual nozzle tip, the part's upper edge immediately
+below it, and a stationary frame feature. No ruler, known object
+height, or layer-height settings are required. The reference applies only to
+this print. The server validates that the selected features are distinguishable;
+verify the overlaid markers before relying on the readings.
+
+The tracker measures vertical image separation in pixels at a repeatable
+nozzle position. It uses separate patches above the nozzle tip and below the
+part edge so both patches do not simply follow the toolhead at contact.
+Other nozzle positions, hidden/ambiguous features, glare and detected camera
+movement produce **Cannot measure**. This is experimental feature tracking,
+not semantic nozzle/part segmentation. Perspective changes or tracking an old
+edge can still create false alarms or missed failures.
+
+A completed-layer comparison requires at least eight valid views, at least two
+in each quarter of the observed layer, and no blind interval longer than the
+larger of 12 seconds or 15% of the layer. A partial startup layer, skipped layer,
+pause, stale status, or new print cannot count as a full-layer confirmation.
+Layer boundaries come from printer reports and are approximate to polling.
+
+For other jobs, the generic check requests inspection when a gap grows by at least 3 pixels from the
+first to last quarter without closing by more than 2 pixels, or stays at least
+3 pixels above an earlier completed-layer baseline without closing. Brief
+travel lifts that close again do not satisfy that rule. Image jitter smaller
+than these thresholds is ignored. A first observed constant gap has no known
+healthy baseline and cannot establish a fault. Missing camera coverage stays
+unknown, never a clean bill of health. A stable visible gap does not prove
+filament is flowing.
+
+The gap may enlarge primarily between layers as the A5MP bed lowers, so the
+second rule checks for a gap remaining open throughout the next layer as well.
+No automatic pause, filament-drying diagnosis, or notification outside this
+dashboard is implemented. Live air-printing failure accuracy is unvalidated;
+tests cover synthetic widening, recovery after travel, occlusion, camera
+movement, state freshness, and layer/run resets.
+
+References are stored owner-only in ignored `data/gap-a5mp.json` and
+`data/gap-reference-*.jpg`. Latest close-ups and the last 20 completed-layer
+results are kept in memory. Marking a new reference clears prior measurements.
+Calibration writes require localhost; LAN clients can view the panel.
+`FLASHFORGE_CAMERA=off` also disables the gap sampler. Legacy height modules
+remain available in the source but are not attached to the running monitor.
+The existing `/api/height/a5mp/*` routes serve this replacement panel.
+
+```sh
+node --test test/gap.test.mjs
+data/obico-venv/bin/python -B test/gap_tracker_test.py
+```
+
 ## Brother laser printer status
 
 The **Laser printer status** tab monitors Brother MFC-L2710DW and HL-L3270CDW printers on your LAN. Set each address using **Settings** on its card; addresses are saved in the ignored `data/printers.json` under `mfc_l2710dw` and `hl_l3270cdw`. The sanitized `data/printers.example.json` includes both models. New checkouts have no Brother addresses configured until you supply them.

@@ -1,4 +1,5 @@
 import { inspectGcode, readTimeEstimate, HEADER_LIMIT } from './gcode.js';
+import { initHeight, renderHeight } from './height.js';
 const $ = selector => document.querySelector(selector);
 const viewTabs = [...document.querySelectorAll('.view-tabs [role="tab"]')];
 let localTools = false;
@@ -50,7 +51,7 @@ const form = $('#settings-form');
 const maintenanceDialog = $('#maintenance-dialog');
 
 async function api(url, options = {}) {
-  const response = await fetch(url, { ...options, signal: AbortSignal.timeout(6000) });
+  const response = await fetch(url, { ...options, signal: options.signal || AbortSignal.timeout(6000) });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || 'Request failed.');
   return data;
@@ -124,6 +125,29 @@ function renderLaserQueues(printers) {
     return `<article class="card queue-card"><div class="card-top"><h3>${escape(p.name)}</h3><span class="help">${escape(label)}</span></div><div class="card-body">${body}</div><div class="card-bottom"><span>${escape(p.host || 'Not configured')}</span><span>${q?.checkedAt ? `${q.available ? 'Read' : 'Checked'} ${escape(new Date(q.checkedAt).toLocaleTimeString())}` : 'Waiting for first reading'}</span></div></article>`;
   }).join('');
 }
+const cameraIds = ['ad5m', 'a5mp', 'c5'];
+const cameraElement = (id, part) => document.getElementById(`camera-${id === 'ad5m' ? '' : id + '-'}${part}`);
+function renderCamera(camera, id) {
+  const element = part => cameraElement(id, part);
+  const c = camera || { state: 'unavailable', message: 'Restart the dashboard to enable camera detection.' };
+  const labels = { clear: 'No spaghetti detected', suspect: 'Inspect image', warning: 'Check print now', starting: 'Starting', idle: 'Waiting for printing', unavailable: 'Unavailable', disabled: 'Not configured' };
+  element('badge').textContent = labels[c.state] || 'Unavailable';
+  element('badge').className = `badge ${c.state === 'clear' ? 'ok' : ['warning', 'suspect'].includes(c.state) ? 'warning' : 'unknown'}`;
+  element('message').textContent = c.message;
+  element('detail').textContent = `${c.frames || 0} images checked this session · ${c.checking ? 'Checking a new image…' : 'Checks about every 20–25 seconds while printing.'}`;
+  element('timestamp').textContent = c.capturedAt ? `Last analyzed image: ${new Date(c.capturedAt).toLocaleString()}` : 'No image analyzed yet.';
+  element('air').textContent = c.airPrinting?.message || 'Filament flow has not been checked.';
+  const img = element('image');
+  if (c.imageUrl && img.getAttribute('src') !== c.imageUrl) img.src = c.imageUrl;
+  img.hidden = !c.imageUrl;
+  element('placeholder').hidden = Boolean(c.imageUrl);
+  element('history').innerHTML = (c.history || []).slice(0, 5).map(h => `<li><time>${escape(new Date(h.capturedAt).toLocaleTimeString())}</time><span>${escape(labels[h.state])}</span></li>`).join('');
+}
+for (const id of cameraIds) cameraElement(id, 'image').addEventListener('error', () => {
+  cameraElement(id, 'image').hidden = true;
+  cameraElement(id, 'placeholder').hidden = false;
+  cameraElement(id, 'placeholder').textContent = 'The last analyzed image could not be loaded.';
+});
 async function refresh() {
   if (refreshing) return;
   refreshing = true;
@@ -136,6 +160,8 @@ async function refresh() {
     if (!localTools && !$('#panel-job').hidden) selectView(viewTabs[0]);
     const printers = data.printers;
     latestPrinters = printers;
+    for (const id of cameraIds) renderCamera(data.cameras?.[id] || (id === 'ad5m' ? data.camera : null), id);
+    renderHeight(data.cameras?.a5mp?.airPrinting, localTools);
     renderHome(printers);
     renderLaserQueues(data.laserPrinters || []);
     const cloudCount = printers.filter(p => p.connected && p.transport?.startsWith('Flashforge cloud')).length;
@@ -150,7 +176,7 @@ async function refresh() {
     if (focusedMaintenance && !maintenanceDialog.open) document.querySelector(`[data-maintenance="${focusedMaintenance}"]`)?.focus({ preventScroll: true });
     $('#online').innerHTML = `${printers.filter(p => p.connected).length}<small> / 4</small>`;
     $('#printing').textContent = printers.filter(p => p.connected && p.rawState === 'printing').length;
-    $('#attention').textContent = printers.filter(p => p.maintenance.due || (p.connected && ['error', 'warning'].includes(p.health))).length;
+    $('#attention').textContent = printers.filter(p => p.maintenance.due || (p.connected && ['error', 'warning'].includes(p.health)) || ['suspect', 'warning'].includes(data.cameras?.[p.id]?.airPrinting?.state) || (['suspect', 'warning'].includes(data.cameras?.[p.id]?.state || (p.id === 'ad5m' ? data.camera?.state : null)))).length;
     $('#unavailable').textContent = printers.filter(p => !p.connected).length;
     $('#updated').textContent = `Updated ${new Date(data.checkedAt).toLocaleTimeString()}`;
     $('#updated').dataset.status = 'updated';
@@ -158,6 +184,13 @@ async function refresh() {
     $('#storage-error').textContent = data.storageError || '';
     $('#storage-error').hidden = !data.storageError;
   } catch {
+    renderHeight(null, false);
+    for (const id of cameraIds) {
+      cameraElement(id, 'badge').textContent = 'Unavailable';
+      cameraElement(id, 'badge').className = 'badge unknown';
+      cameraElement(id, 'message').textContent = 'Dashboard disconnected. The image and detection result are stale.';
+      cameraElement(id, 'air').textContent = 'Air printing: printer status unavailable.';
+    }
     $('#connection-error').textContent = 'Dashboard service disconnected. Readings below are stale. Restart the app on this Mac to reconnect.';
     $('#connection-error').hidden = false;
     $('#updated').textContent = 'Updates stopped';
@@ -367,5 +400,6 @@ $('#cloud-reconnect').addEventListener('click', async () => {
   catch (error) { $('#cloud-state').textContent = error.message; }
   finally { $('#cloud-reconnect').disabled = false; }
 });
+initHeight(api, refresh);
 void refresh();
 setInterval(refresh, 5000);
