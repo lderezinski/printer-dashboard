@@ -10,7 +10,7 @@ import { canAnalyze } from './obico.mjs';
 const median = values => { const a=[...values].sort((a,b)=>a-b); return a.length ? (a[Math.floor((a.length-1)/2)]+a[Math.floor(a.length/2)])/2 : null; };
 const quantile = (values,p) => [...values].sort((a,b)=>a-b)[Math.floor((values.length-1)*p)];
 export const DARK_CHESS_RULE = 'light-head-dark-chess-v1';
-export const DARK_CHESS_JOB = 'a5mp-dark-chess-calibration.3mf';
+export const DARK_CHESS_JOB = process.env.FLASHFORGE_DARK_CHESS_JOB || 'a5mp-dark-chess-calibration.3mf';
 export function summarizeGapLayer(window, endAt, baseline = null) {
   const duration = endAt-window.startedAt;
   const points = window.points;

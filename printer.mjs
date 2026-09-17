@@ -1,8 +1,8 @@
 export const MODELS = [
   { id: 'ad5m', name: 'AD5M', model: 'Adventurer 5M', tools: 1, defaultHost: '192.168.50.101' },
   { id: 'a5mp', name: 'A5MP', model: 'Adventurer 5M Pro', tools: 1, defaultHost: '192.168.50.102' },
-  { id: 'c5', name: 'C5', model: 'Creator 5', tools: 4, defaultHost: '192.168.50.10152' },
-  { id: 'c5p', name: 'C5P', model: 'Creator 5 Pro', tools: 4, defaultHost: '192.168.50.10154' },
+  { id: 'c5', name: 'C5', model: 'Creator 5', tools: 4, defaultHost: '192.168.50.103' },
+  { id: 'c5p', name: 'C5P', model: 'Creator 5 Pro', tools: 4, defaultHost: '192.168.50.104' },
 ];
 
 export function number(value) {

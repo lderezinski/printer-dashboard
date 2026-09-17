@@ -13,13 +13,13 @@ npm start
 
 Open http://localhost:3000 on this Mac. Or double-click **Start Dashboard.command** in Finder. Keep the Terminal window open while monitoring; press Control-C to stop.
 
-From a phone, tablet, or computer on the same home network, open **http://192.168.50.10:3000**. Keep this Mac awake and the dashboard running. The Terminal prints the current LAN address at startup; if the Mac's address changes, use the new address. A DHCP reservation for this Mac in your router can keep the address consistent. If macOS asks whether Node may accept incoming connections, choose Allow for LAN access.
+From a phone, tablet, or computer on the same home network, open the LAN address printed in the Terminal when the dashboard starts. Keep this Mac awake and the dashboard running. If the Mac's address changes, use the new address. A DHCP reservation for this Mac in your router can keep the address consistent. If macOS asks whether Node may accept incoming connections, choose Allow for LAN access.
 
 Devices on your LAN can view the dashboard and edit its settings, existing history, and maintenance records. **Add past print** and **Check a sliced job** are available only through `http://localhost:3000` on this Mac; opening any IP address hides those tools. Manual history creation is also blocked by the server for IP access and non-loopback clients. There is no dashboard login. No router port forwarding or public hosting is needed.
 
 ## Connect the printers
 
-The four supplied addresses are prefilled: AD5M `192.168.50.101`, A5MP `192.168.50.102`, C5 `192.168.50.10152`, and C5P `192.168.50.10154`.
+Example private-network addresses are prefilled for the four 3D printers. Replace them with each printer's LAN address in **Settings**.
 
 Keep Flashforge cloud enabled. The dashboard uses Flash Studio’s saved sign-in session and the installed networking library to retrieve your account’s printer list and MQTT connection information. Leave Flash Studio installed in `/Applications/Flash Studio.app`. It need not stay open after sign-in; when its session expires, sign in there again and click **Reconnect cloud** in the dashboard.
 
@@ -107,7 +107,9 @@ failures and stale status remain unavailable, and no printer commands are sent.
 
 The gap check is disabled by default for now; its code and saved references are
 preserved. Spaghetti detection continues using its own camera captures. To
-enable the gap check again, start with `FLASHFORGE_GAP=on npm start`.
+enable the gap check again, start with `FLASHFORGE_GAP=on npm start`. Set
+`FLASHFORGE_DARK_CHESS_JOB` to the exact calibration filename when using the
+optional dark-chess rule.
 
 Home starts with **Finishing next**. The **A5MP camera checks** tile below
 uses the built-in close-up camera for both gaps and spaghetti.
@@ -116,7 +118,7 @@ competing camera connections. Gap sampling runs about every 3–4 seconds while 
 status says printing; Obico's slower inference does not delay these checks.
 This replaces the earlier expected-height/millimeter calibration workflow.
 
-For the **dark-chess calibration** job on the A5MP, the temporary
+For an A5MP dark-chess calibration job, the temporary
 `light-head-dark-chess-v1` rule uses the light-gray print head and the silk-black
 chess piece. Their close spacing in the user-confirmed healthy reference is
 normal. A gap of at least 3 pixels **beyond that healthy spacing**, present in
@@ -128,7 +130,7 @@ and the normal distance between the housing and the extrusion point.
 This profile validates a bright head patch and a dark part patch (allowing silk
 highlights), then tracks their separation at the reference pose. It does not
 recognize chess shapes or infer extrusion. Hidden, changed, or ambiguous features
-remain unknown. It is restricted to the exact saved Dark Pawn job filename and
+remain unknown. It is restricted to the configured dark-chess calibration filename and
 the calibrated print run; other jobs keep the generic gap rule. The saved healthy
 reference has been selected for this run. A new run needs a fresh healthy
 reference, marking the lower gray head edge, the dark piece immediately below,
@@ -208,22 +210,15 @@ The bottom of **Home** shows **Laserjet queues**, polling each printer's IPP end
 
 ## Maintenance
 
-Use **Add task** on a printer card, or **Manage** beside an existing task. Each task has independent printing-hours and/or calendar-days intervals. Your requested tasks are configured: **Check for nozzle bend** every **100 printing hours** on C5/C5P, and **Lubrication** every **200 printing hours** on all four printers. These are your chosen schedules, not a manufacturer schedule supplied by the app. A reminder becomes due when either limit is reached. Reminders appear in the dashboard; there are no email, push, or operating-system notifications.
+Use **Add task** on a printer card, or **Manage** beside an existing task. Each task has independent printing-hours and/or calendar-days intervals. A reminder becomes due when either limit is reached. Reminders appear in the dashboard; there are no email, push, or operating-system notifications.
 
 Hours are **observed printing time**, not lifetime hours: only short intervals (at most 15 seconds) bracketed by two successful printing readings are counted. Pauses, disconnections, Mac sleep, and app downtime are excluded. The counter starts when tracking begins; historical usage is not reconstructed. Calendar reminders continue to work while a printer connection is unavailable.
 
-New reminders begin when saved. Editing preserves the original baseline. **Mark serviced today** adds a local service record and resets only that task’s intervals without resetting other tasks or the accumulated observed-hours total. The first reminders use the next 100/200 lifetime-hour milestones, as requested. No past service is inferred. After a task is marked serviced, its next full interval starts from that service. Data is saved atomically to `data/maintenance.json` after each poll and reminder action. Keep the app running to count printing time. A failed save displays a warning.
+New reminders begin when saved. Editing preserves the original baseline. **Mark serviced today** adds a local service record and resets only that task’s intervals without resetting other tasks or the accumulated observed-hours total. No past service is inferred. After a task is marked serviced, its next full interval starts from that service. Data is saved atomically to `data/maintenance.json` after each poll and reminder action. Keep the app running to count printing time. A failed save displays a warning.
 
 ## Machine baselines
 
-The supplied printer-information screenshots are saved in `data/maintenance.json`, with their original printing totals, material counters in centimeters, nozzle sizes, build volumes, firmware versions, and serial numbers. Expand **Machine baseline** on a card to review them.
-
-| Printer | Starting print counter | Material counter | First nozzle check | First lubrication |
-| --- | --- | --- | --- | --- |
-| AD5M | example baseline | example material total | — | 200 total hours |
-| A5MP | example baseline | example material total | — | 2,000 total hours |
-| C5 | example baseline | example material total | 700 total hours | 800 total hours |
-| C5P | example baseline | example material total | 400 total hours | 400 total hours |
+Printer-information baselines are saved only in the ignored `data/maintenance.json`, including printing totals, material counters, nozzle sizes, build volumes, firmware versions, and serial numbers. Expand **Machine baseline** on a card to review them locally.
 
 The displayed lifetime total adds only printing observed **after** the screenshot baseline was recorded. Previously observed app time is not added again. Downtime and missed readings are not backfilled; keep the service running and Mac awake to continue counting. Material counters remain labeled as baseline values; consumption after that point is not yet tracked. Baselines do not establish last-service dates. Each task clearly labels its initial milestone until the first recorded service.
 
@@ -237,13 +232,13 @@ Prints first seen underway have an unknown total. Disconnections, Mac sleep, res
 
 Use **Add past print** for earlier jobs or prints missed while monitoring was disconnected. Enter the printer, job, end date, estimate, actual duration and outcome. Automatic monitoring cannot reconstruct jobs that start and finish while the app is closed, or distinguish every same-name restart between polls. Keep this Mac awake and the service running for the best coverage.
 
-Records are saved locally and atomically in `data/history.json`, including active records and estimate provenance. The supplied logo's embedded estimate is **7:37:55**; its filename's rounded time is not used. No actual logo print time has been supplied yet.
+Records are saved locally and atomically in `data/history.json`, including active records and estimate provenance.
 
 ## Inspect a sliced job
 
 Use **Check a sliced job → Choose G-code** to inspect a Flash Studio `.gcode` export in the browser. The inspector reads only the first 1 MiB and requires a complete configuration header there. It shows the printer profile, each filament channel's material/color and both available quantity estimates. It does not execute G-code, upload a file, or authorize printing. Sliced `.3mf` files are not yet supported.
 
-The supplied Flash Studio 1.7.17 logo sample targets Creator 5 with four 0.4 mm nozzles and PETG channels. Its summary lists 63.32 g while the individual filament records sum to 61.27 g. Both are preserved and the discrepancy is flagged; the reason for the difference and purge coverage have not been verified. The two orange channels remain distinct. A machine-readable inspection of that sample is saved in `reports/flashforge-logo-requirements.json`.
+The sanitized Flash Studio example targets Creator 5 with four 0.4 mm nozzles and PETG channels. Its summary and individual filament records intentionally differ so the discrepancy handling remains covered by tests. A machine-readable inspection is saved in `reports/flashforge-logo-requirements.json`.
 
 Only metadata was inspected; this does not establish actual loaded filament, available quantity, or full printer compatibility. No sample G-code was sent to a printer.
 

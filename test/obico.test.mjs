@@ -88,7 +88,7 @@ test('all internal cameras enable from printer settings without Tapo accounts', 
   const root = await mkdtemp(path.join(tmpdir(), 'c5p-camera-'));
   try {
     await mkdir(path.join(root, 'data'));
-    await writeFile(path.join(root, 'data', 'printers.json'), JSON.stringify({c5p:{host:'192.168.50.10154'}}));
+    await writeFile(path.join(root, 'data', 'printers.json'), JSON.stringify({c5p:{host:'192.168.50.104'}}));
     for (const id of ['ad5m', 'a5mp', 'c5', 'c5p']) {
       const monitor = new ObicoMonitor(root, () => sample, () => id+'-job', id);
       assert.equal(monitor.enabled, process.env.FLASHFORGE_CAMERA !== 'off');

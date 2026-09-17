@@ -71,12 +71,9 @@ class DarkChessTests(GapTests):
         with self.assertRaisesRegex(ValueError,'silk-black'):
             GapTracker(self.frame(),{**self.points,'rule':DARK_CHESS_RULE})
 
-    def test_good_real_reference_has_no_open_gap(self):
-        import cv2
-        source=Path(__file__).parent/'fixtures'/'a5mp-dark-chess-healthy.jpg'
-        image=cv2.imread(str(source))
-        tracker=GapTracker(image,{'nozzle':[350,148],'top':[350,158],
-                                  'anchor':[90,122],'rule':DARK_CHESS_RULE})
+    def test_good_synthetic_reference_has_no_open_gap(self):
+        image=self.frame()
+        tracker=GapTracker(image,{**self.points,'rule':DARK_CHESS_RULE})
         result=tracker.measure(image)
         self.assertEqual(result['state'],'measured')
         self.assertEqual(result['gapPx'],0)

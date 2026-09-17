@@ -39,7 +39,7 @@ test('real error codes and error state need attention; zero code is clear', () =
 });
 test('only private IPv4 printer addresses accepted', () => {
   assert.equal(validateConfig({ host: '192.168.50.101' }).host, '192.168.50.101');
-  for (const host of ['127.0.0.1', '8.8.8.8', '192.168.1.999', 'printer.local/path', '192.168.50.101:80', '192.168.01.2']) assert.throws(() => validateConfig({ host }));
+  for (const host of ['127.0.0.1', '8.8.8.8', '192.168.50.999', 'printer.local/path', '192.168.50.101:80', '192.168.050.101']) assert.throws(() => validateConfig({ host }));
 });
 const config = { host: '192.168.50.101', serialNumber: 'test-serial', checkCode: 'test-code' };
 test('transport only requests /detail and tolerates firmware content-type typo', async () => {

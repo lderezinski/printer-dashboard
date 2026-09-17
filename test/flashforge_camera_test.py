@@ -22,9 +22,9 @@ class IntegratedCameraTests(unittest.TestCase):
         (self.root / 'data').mkdir()
         self.config = self.root / 'data' / 'printers.json'
         self.config.write_text(json.dumps({'ad5m': {'host': '192.168.50.101'},
-                                           'c5': {'host': '192.168.50.10152'},
+                                           'c5': {'host': '192.168.50.103'},
                                            'a5mp': {'host': '192.168.50.102'},
-                                           'c5p': {'host': '192.168.50.10154'}}))
+                                           'c5p': {'host': '192.168.50.104'}}))
         ok, encoded = cv2.imencode('.jpg', np.full((48, 64, 3), 120, dtype=np.uint8))
         assert ok
         self.jpeg = encoded.tobytes()
@@ -34,7 +34,7 @@ class IntegratedCameraTests(unittest.TestCase):
         stream = io.BytesIO(b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + self.jpeg)
         opener.open.return_value = stream
         image, jpeg, captured_at = capture_flashforge(self.root, 'c5p', opener)
-        opener.open.assert_called_once_with('http://192.168.50.10154:8080/?action=stream', timeout=4)
+        opener.open.assert_called_once_with('http://192.168.50.104:8080/?action=stream', timeout=4)
         self.assertEqual(image.shape, (48, 64, 3))
         self.assertEqual(jpeg, self.jpeg)
         self.assertGreater(captured_at, 0)
@@ -60,7 +60,7 @@ class IntegratedCameraTests(unittest.TestCase):
 
     def test_all_printers_route_to_their_own_internal_camera(self):
         for id, host in [('ad5m', '192.168.50.101'), ('a5mp', '192.168.50.102'),
-                         ('c5', '192.168.50.10152'), ('c5p', '192.168.50.10154')]:
+                         ('c5', '192.168.50.103'), ('c5p', '192.168.50.104')]:
             with self.subTest(printer=id):
                 opener = Mock()
                 opener.open.return_value = io.BytesIO(self.jpeg)

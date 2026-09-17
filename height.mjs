@@ -83,7 +83,7 @@ export class HeightMonitor {
     return { ...data, imageUrl: `/api/height/a5mp/reference/${data.id}`, suggestedProfile: this.suggestedProfile(data.job) };
   }
   suggestedProfile(job) {
-    return job === 'a5mp-dark-chess-calibration.3mf'
+    return job === (process.env.FLASHFORGE_DARK_CHESS_JOB || 'a5mp-dark-chess-calibration.3mf')
       ? { firstLayerMm: .15, layerMm: .12, source: 'Saved dark-chess calibration project; confirm against the running slice.' } : null;
   }
   async calibrate(value) {

@@ -5,8 +5,8 @@ import { CloudMonitor, parseCloudMessage, validateBootstrap, CLOUD_FRESH_MS } fr
 import { createRecord, setSchedule, markServiced, maintenanceStatus, upgradeRecord, setBaseline, alignInitialReminders, lifetimeHours } from '../maintenance.mjs';
 
 const devices = [{ model: 'Creator 5 Pro', sn: 'fixture-serial', deviceID: 'fixture-device', gTopic: 'fixture/printer' }];
-const settings = { c5p: { host: '192.168.50.10154' } };
-const data = { sn: 'fixture-serial', deviceID: 'fixture-device', pid: '0029', ipAddress: '192.168.50.10154', status: 'printing', fileName: 'drawer.3mf', progress: .521,
+const settings = { c5p: { host: '192.168.50.104' } };
+const data = { sn: 'fixture-serial', deviceID: 'fixture-device', pid: '0029', ipAddress: '192.168.50.104', status: 'printing', fileName: 'drawer.3mf', progress: .521,
   printLayer: 57, targetLayer: 287, duration: 26719, estimateTime: 24298, nozzleTemps: [29, 29, 130, 220], nozzleTargetTemps: [0, 0, 130, 220], platformCurTemperature: 54, platformTargetTemperature: 55,
   chamberTemp: 30, chamberTargetTemp: 0, door: 'close', authToken: 'must-not-escape', stream: 'must-not-escape', firmwareVersion: '1.9.9-1.3.0' };
 const message = overrides => Buffer.from(JSON.stringify({ eventType: 'device_action', payload: { action_type: 'device_status', data: { ...data, ...overrides } } }));
@@ -22,7 +22,7 @@ test('live Creator reports map remaining time, progress and tool temperatures; s
   assert.ok(!JSON.stringify(report).includes('must-not-escape')); assert.ok(!JSON.stringify(report).includes('fixture-serial'));
 });
 test('cloud identity checks reject unknown devices, wrong address/model and ambiguous matches', () => {
-  for (const change of [{ sn: 'other' }, { deviceID: 'other' }, { ipAddress: '192.168.50.10152' }, { pid: '0028' }, { status: null }]) assert.equal(parseCloudMessage(message(change), devices, settings), null);
+  for (const change of [{ sn: 'other' }, { deviceID: 'other' }, { ipAddress: '192.168.50.103' }, { pid: '0028' }, { status: null }]) assert.equal(parseCloudMessage(message(change), devices, settings), null);
   assert.equal(parseCloudMessage(message(), [...devices, { ...devices[0], sn: 'other' }], settings), null);
 });
 test('cached REST details, commands, malformed or oversized messages cannot become live status', () => {

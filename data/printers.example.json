@@ -1,31 +1,31 @@
 {
   "ad5m": {
-    "host": "192.168.1.101",
+    "host": "192.168.50.101",
     "serialNumber": "",
     "checkCode": ""
   },
   "a5mp": {
-    "host": "192.168.1.102",
+    "host": "192.168.50.102",
     "serialNumber": "",
     "checkCode": ""
   },
   "c5": {
-    "host": "192.168.1.103",
+    "host": "192.168.50.103",
     "serialNumber": "",
     "checkCode": ""
   },
   "mfc_l2710dw": {
-    "host": "192.168.1.105",
+    "host": "192.168.50.105",
     "serialNumber": "",
     "checkCode": ""
   },
   "hl_l3270cdw": {
-    "host": "192.168.1.106",
+    "host": "192.168.50.106",
     "serialNumber": "",
     "checkCode": ""
   },
   "c5p": {
-    "host": "192.168.1.104",
+    "host": "192.168.50.104",
     "serialNumber": "",
     "checkCode": ""
   }

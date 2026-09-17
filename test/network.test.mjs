@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { isPrivateIPv4, lanAddresses, requestAccessError, canUseLocalTools } from '../network.mjs';
 
 const addresses = ['192.168.50.10'];
-const request = (host = '192.168.50.10:3000', peer = '192.168.50.1010', headers = {}) => ({
+const request = (host = '192.168.50.10:3000', peer = '192.168.50.20', headers = {}) => ({
   socket: { remoteAddress: peer }, headers: { host, ...headers }
 });
 const check = req => requestAccessError(req, 3000, addresses);
@@ -13,7 +13,7 @@ test('local tools require both localhost and an actual loopback client', () => {
   assert.equal(canUseLocalTools(request('localhost:3000', '::ffff:127.0.0.1'), 3000), true);
   for (const req of [request(), request('localhost:3000'), request('127.0.0.1:3000', '127.0.0.1'),
     request('192.168.50.10:3000', '127.0.0.1'), request('localhost:3001', '127.0.0.1'),
-    request('192.168.50.10:3000', '192.168.50.1010', { 'x-forwarded-for': '127.0.0.1' })]) {
+    request('192.168.50.10:3000', '192.168.50.20', { 'x-forwarded-for': '127.0.0.1' })]) {
     assert.equal(canUseLocalTools(req, 3000), false);
   }
 });
@@ -38,7 +38,7 @@ test('LAN and local clients can access their dashboard origin', () => {
 
 test('reject public clients, unrecognized hosts, and other browser origins', () => {
   for (const req of [request(undefined, '8.8.8.8'), request('attacker.example:3000'),
-    request('192.168.50.1010:3000'), request('192.168.50.10:3001'),
+    request('192.168.50.20:3000'), request('192.168.50.10:3001'),
     request(undefined, undefined, { origin: 'https://attacker.example' }),
     request(undefined, undefined, { origin: 'null' }),
     request(undefined, undefined, { origin: 'http://localhost:3000' }),

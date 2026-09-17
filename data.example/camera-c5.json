@@ -1,5 +1,5 @@
 {
-  "host": "192.168.50.1993",
+  "host": "192.168.50.113",
   "username": "camera-user",
   "password": "replace-with-camera-password",
   "stream": "stream1"
