@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Flashforge Health contributors
+# SPDX-License-Identifier: AGPL-3.0-only
 """Experimental image-space gap tracking at a repeatable camera pose."""
 import json
 import sys

@@ -1,3 +1,5 @@
+// Copyright (C) 2026 Flashforge Health contributors
+// SPDX-License-Identifier: AGPL-3.0-only
 // Metadata inspection only. Never interprets or executes printer commands.
 export const HEADER_LIMIT = 1024 * 1024;
 

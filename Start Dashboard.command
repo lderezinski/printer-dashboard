@@ -1,4 +1,6 @@
 #!/bin/zsh
+# Copyright (C) 2026 Flashforge Health contributors
+# SPDX-License-Identifier: AGPL-3.0-only
 cd "${0:A:h}" || exit 1
 if ! command -v node >/dev/null 2>&1; then
   print 'Node.js 22 or newer is required.'

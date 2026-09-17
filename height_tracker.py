@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Flashforge Health contributors
+# SPDX-License-Identifier: AGPL-3.0-only
 """Conservative, calibrated landmark tracker for a fixed side-view camera.
 
 Tracks an exposed bed texture, the part's upper edge, and a fixed frame feature.

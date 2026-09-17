@@ -1,0 +1,1694 @@
+{
+  "reviewedOn": "2026-09-17",
+  "scope": "Installed package metadata and supplied notices; see THIRD_PARTY_NOTICES.md for unresolved model, proprietary plugin, and binary-specific questions.",
+  "packages": [
+    {
+      "ecosystem": "npm",
+      "name": "@babel/runtime",
+      "version": "7.29.7",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/@babel/runtime/v/7.29.7",
+      "notices": [
+        {
+          "source": "node_modules/@babel/runtime/LICENSE",
+          "sha256": "117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@types/node",
+      "version": "22.20.2",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/@types/node/v/22.20.2",
+      "notices": [
+        {
+          "source": "node_modules/@types/node/LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@types/readable-stream",
+      "version": "4.0.24",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/@types/readable-stream/v/4.0.24",
+      "notices": [
+        {
+          "source": "node_modules/@types/readable-stream/LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@types/ws",
+      "version": "8.18.1",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/@types/ws/v/8.18.1",
+      "notices": [
+        {
+          "source": "node_modules/@types/ws/LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "abort-controller",
+      "version": "3.0.0",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/abort-controller/v/3.0.0",
+      "notices": [
+        {
+          "source": "node_modules/abort-controller/LICENSE",
+          "sha256": "dbbf03317f0101fed5643cd87ca80fb769e358fa4f428445bf2315deeb23a154"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "asn1-ber",
+      "version": "1.2.2",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/asn1-ber/v/1.2.2",
+      "notices": [
+        {
+          "source": "node_modules/asn1-ber/README.md (License section)",
+          "sha256": "78aa5f3908a75d8dd1ecf563682e7fb18df5a3ee08b0906fc0d9ae63a1ab1a84"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "base64-js",
+      "version": "1.5.1",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/base64-js/v/1.5.1",
+      "notices": [
+        {
+          "source": "node_modules/base64-js/LICENSE",
+          "sha256": "5b37224c080cdcc97c871ada971c224e9926370fe74f11b539aa1cf9f3b1aca1"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "bl",
+      "version": "6.1.6",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/bl/v/6.1.6",
+      "notices": [
+        {
+          "source": "node_modules/bl/LICENSE.md",
+          "sha256": "9377db95383c8befacf05c6e465d969d756edf178487ca1344fdf3ba147c596f"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "broker-factory",
+      "version": "3.1.15",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/broker-factory/v/3.1.15",
+      "notices": [
+        {
+          "source": "node_modules/broker-factory/LICENSE",
+          "sha256": "04238a17c611b988a3ef5934e6c247acd4a344c837f60b223f3d9ffb57aa4dde"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "buffer",
+      "version": "6.0.3",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/buffer/v/6.0.3",
+      "notices": [
+        {
+          "source": "node_modules/buffer/LICENSE",
+          "sha256": "06bafa45fdad2579ba0e43b0c9b2c6290287c99c4203c300254a462b38a307f6"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "buffer-from",
+      "version": "1.1.2",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/buffer-from/v/1.1.2",
+      "notices": [
+        {
+          "source": "node_modules/buffer-from/LICENSE",
+          "sha256": "14275f5c8139d02054c5259d52a88ccbba662a86af18c30f071c8d082dc6004c"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "commist",
+      "version": "3.2.0",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/commist/v/3.2.0",
+      "notices": [
+        {
+          "source": "node_modules/commist/LICENSE",
+          "sha256": "f56197ed3d0b2d65d9c5bd1b9ef4d2f480d30f42834d789fd8c375426c8d7bcc"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "concat-stream",
+      "version": "2.0.0",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/concat-stream/v/2.0.0",
+      "notices": [
+        {
+          "source": "node_modules/concat-stream/LICENSE",
+          "sha256": "96b29c9aaa611a05349b362d48c2ffce0966fe408401a2d1a157be312c035b5f"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "readable-stream",
+      "version": "3.6.2",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/readable-stream/v/3.6.2",
+      "notices": [
+        {
+          "source": "node_modules/concat-stream/node_modules/readable-stream/LICENSE",
+          "sha256": "ec62dc96da0099b87f4511736c87309335527fb7031639493e06c95728dc8c54"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "debug",
+      "version": "4.4.3",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/debug/v/4.4.3",
+      "notices": [
+        {
+          "source": "node_modules/debug/LICENSE",
+          "sha256": "3a61c6c96caf5c1d9b623fb9b04c822b783dfcb78aa7e49c76a3f643e6ed7f95"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "event-target-shim",
+      "version": "5.0.1",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/event-target-shim/v/5.0.1",
+      "notices": [
+        {
+          "source": "node_modules/event-target-shim/LICENSE",
+          "sha256": "97d87142793695cd73243de7258694abe85b3b6060fca7f247b0a2afa8219678"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "events",
+      "version": "3.3.0",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/events/v/3.3.0",
+      "notices": [
+        {
+          "source": "node_modules/events/LICENSE",
+          "sha256": "631987b7616a325a5b97566c232418481ddf7dbb5ecadefb991e791876cc2599"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "fast-unique-numbers",
+      "version": "9.0.27",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/fast-unique-numbers/v/9.0.27",
+      "notices": [
+        {
+          "source": "node_modules/fast-unique-numbers/LICENSE",
+          "sha256": "04238a17c611b988a3ef5934e6c247acd4a344c837f60b223f3d9ffb57aa4dde"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "help-me",
+      "version": "5.0.0",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/help-me/v/5.0.0",
+      "notices": [
+        {
+          "source": "node_modules/help-me/LICENSE",
+          "sha256": "92ff7edfcfc974e452612d5d7f4977aa7be058ef62979210bcb5c899ae6db60d"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "ieee754",
+      "version": "1.2.1",
+      "license": "BSD-3-Clause",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/ieee754/v/1.2.1",
+      "notices": [
+        {
+          "source": "node_modules/ieee754/LICENSE",
+          "sha256": "18d45466ba3253deae04667e267a91ea8de8548f18c1125264d1c9db28194cc1"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "inherits",
+      "version": "2.0.4",
+      "license": "ISC",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/inherits/v/2.0.4",
+      "notices": [
+        {
+          "source": "node_modules/inherits/LICENSE",
+          "sha256": "5ffe28e7ade7d8f10d85d5337a73fd793dac5c462fb9a28fbf8c5046c7fbca3b"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "ip-address",
+      "version": "10.7.0",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/ip-address/v/10.7.0",
+      "notices": [
+        {
+          "source": "node_modules/ip-address/LICENSE",
+          "sha256": "f8d791359a50cbcac82c29cb7b0b1b889b28be76fdd35b8ee33f0f7c8704702a"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "ipp",
+      "version": "1.1.0",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/ipp/v/1.1.0",
+      "notices": [
+        {
+          "source": "node_modules/ipp/README.md (License section)",
+          "sha256": "e5dcffe836b6ec8a58e492419b550e65fb8cbdc308503979e5dacb33ac7ea3b7"
+        }
+      ],
+      "note": "Package metadata and README declare MIT; the package supplies no full license text. Preserve the declaration and confirm a complete notice before repackaging."
+    },
+    {
+      "ecosystem": "npm",
+      "name": "js-sdsl",
+      "version": "4.3.0",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/js-sdsl/v/4.3.0",
+      "notices": [
+        {
+          "source": "node_modules/js-sdsl/LICENSE",
+          "sha256": "787684b2059945f845f404340e20c4c8e3f325f4ab7aaeaf8e985f38c8d84658"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "lru-cache",
+      "version": "10.4.3",
+      "license": "ISC",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/lru-cache/v/10.4.3",
+      "notices": [
+        {
+          "source": "node_modules/lru-cache/LICENSE",
+          "sha256": "451ec07eeb9c4e1b86de9abdaa426462a8be48f887ec7421cf0bbb9c769555ab"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "minimist",
+      "version": "1.2.8",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/minimist/v/1.2.8",
+      "notices": [
+        {
+          "source": "node_modules/minimist/LICENSE",
+          "sha256": "435a6722c786b0a56fbe7387028f1d9d3f3a2d0fb615bb8fee118727c3f59b7b"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "mqtt",
+      "version": "5.15.2",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/mqtt/v/5.15.2",
+      "notices": [
+        {
+          "source": "node_modules/mqtt/LICENSE.md",
+          "sha256": "81b51ef8ac2a8ac8f111ed34ab1a32d63e7f4f7de586bd65f5510fb1ba3a89eb"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "mqtt-packet",
+      "version": "9.0.2",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/mqtt-packet/v/9.0.2",
+      "notices": [
+        {
+          "source": "node_modules/mqtt-packet/LICENSE.md",
+          "sha256": "51c9c4054d580356e61a83ef0731046a9909c37e2495894d795828fd56041d27"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "ms",
+      "version": "2.1.3",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/ms/v/2.1.3",
+      "notices": [
+        {
+          "source": "node_modules/ms/license.md",
+          "sha256": "1662fae9b5314d11cf51284e2dcd1f006a354f7343f08712a730fcff9a359801"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "net-snmp",
+      "version": "3.29.1",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/net-snmp/v/3.29.1",
+      "notices": [
+        {
+          "source": "node_modules/net-snmp/README.md (License section)",
+          "sha256": "33599b40abd9b59cd603206a6b7aa097bc47ff0f8dfa95004fdf0446e693e7fb"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "number-allocator",
+      "version": "1.0.14",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/number-allocator/v/1.0.14",
+      "notices": [
+        {
+          "source": "node_modules/number-allocator/LICENSE",
+          "sha256": "0b82716ea785fe76dffcd1755b2e9cda14fd1cf63c47edd4986b8efd3506918f"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "process",
+      "version": "0.11.10",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/process/v/0.11.10",
+      "notices": [
+        {
+          "source": "node_modules/process/LICENSE",
+          "sha256": "59a400d04c5078579acc27ddd6452c1bdf763f9506e01364700935fbb1a7c91b"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "process-nextick-args",
+      "version": "2.0.1",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/process-nextick-args/v/2.0.1",
+      "notices": [
+        {
+          "source": "node_modules/process-nextick-args/license.md",
+          "sha256": "ecdccbcf39024f624ded480c01c0b25458e1eca8f26ecf040933865ce56d9a4f"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "readable-stream",
+      "version": "4.7.0",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/readable-stream/v/4.7.0",
+      "notices": [
+        {
+          "source": "node_modules/readable-stream/LICENSE",
+          "sha256": "ec62dc96da0099b87f4511736c87309335527fb7031639493e06c95728dc8c54"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "rfdc",
+      "version": "1.4.1",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/rfdc/v/1.4.1",
+      "notices": [
+        {
+          "source": "node_modules/rfdc/LICENSE",
+          "sha256": "1ce941682a96c7b898ecd125d0f2e22319758ea6f3adbf498a65d649b0f3f7dd"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "safe-buffer",
+      "version": "5.2.1",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/safe-buffer/v/5.2.1",
+      "notices": [
+        {
+          "source": "node_modules/safe-buffer/LICENSE",
+          "sha256": "c7cc929b57080f4b9d0c6cf57669f0463fc5b39906344dfc8d3bc43426b30eac"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "smart-buffer",
+      "version": "4.2.0",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/smart-buffer/v/4.2.0",
+      "notices": [
+        {
+          "source": "node_modules/smart-buffer/LICENSE",
+          "sha256": "c46e2c333e1c9e6fcfd130cf91b8e54bf67b60fabbc04996f7e199b990353ff3"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "socks",
+      "version": "2.8.10",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/socks/v/2.8.10",
+      "notices": [
+        {
+          "source": "node_modules/socks/LICENSE",
+          "sha256": "4f4f28866154c8d758241a64296e8790d45d7d912ff7b029930778c06d8f2a72"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "split2",
+      "version": "4.2.0",
+      "license": "ISC",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/split2/v/4.2.0",
+      "notices": [
+        {
+          "source": "node_modules/split2/LICENSE",
+          "sha256": "c372ef2fa1dfcb124ed807609751e75e3a009f108c5724916b489288fcb88a0c"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "string_decoder",
+      "version": "1.3.0",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/string_decoder/v/1.3.0",
+      "notices": [
+        {
+          "source": "node_modules/string_decoder/LICENSE",
+          "sha256": "11f2aafb37d06b3ee5bdaf06e9811141d0da05263c316f3d627f45c20d43261b"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "tslib",
+      "version": "2.8.1",
+      "license": "0BSD",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/tslib/v/2.8.1",
+      "notices": [
+        {
+          "source": "node_modules/tslib/LICENSE.txt",
+          "sha256": "0e8d2550baea17eb3072c4f919b36fbf9852bb49dba948549872e713863c0834"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "typedarray",
+      "version": "0.0.6",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/typedarray/v/0.0.6",
+      "notices": [
+        {
+          "source": "node_modules/typedarray/LICENSE",
+          "sha256": "26181ebee1063f3dc6766a3b6d05999a0da058f172eadf2ca5d15105ffd9735a"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "undici-types",
+      "version": "6.21.0",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/undici-types/v/6.21.0",
+      "notices": [
+        {
+          "source": "node_modules/undici-types/LICENSE",
+          "sha256": "a6db8096b2707bc0102d256917d4d33f298ba36d8c3f25de067a2b5bb379db27"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "util-deprecate",
+      "version": "1.0.2",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/util-deprecate/v/1.0.2",
+      "notices": [
+        {
+          "source": "node_modules/util-deprecate/LICENSE",
+          "sha256": "0154425673db15cdfa80ecba2c9b1f1a867f7197a006764712849bfc3a93cbb7"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "worker-factory",
+      "version": "7.0.50",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/worker-factory/v/7.0.50",
+      "notices": [
+        {
+          "source": "node_modules/worker-factory/LICENSE",
+          "sha256": "04238a17c611b988a3ef5934e6c247acd4a344c837f60b223f3d9ffb57aa4dde"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "worker-timers",
+      "version": "8.0.34",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/worker-timers/v/8.0.34",
+      "notices": [
+        {
+          "source": "node_modules/worker-timers/LICENSE",
+          "sha256": "04238a17c611b988a3ef5934e6c247acd4a344c837f60b223f3d9ffb57aa4dde"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "worker-timers-broker",
+      "version": "8.0.18",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/worker-timers-broker/v/8.0.18",
+      "notices": [
+        {
+          "source": "node_modules/worker-timers-broker/LICENSE",
+          "sha256": "04238a17c611b988a3ef5934e6c247acd4a344c837f60b223f3d9ffb57aa4dde"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "worker-timers-worker",
+      "version": "9.0.15",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/worker-timers-worker/v/9.0.15",
+      "notices": [
+        {
+          "source": "node_modules/worker-timers-worker/LICENSE",
+          "sha256": "04238a17c611b988a3ef5934e6c247acd4a344c837f60b223f3d9ffb57aa4dde"
+        }
+      ]
+    },
+    {
+      "ecosystem": "npm",
+      "name": "ws",
+      "version": "8.21.3",
+      "license": "MIT",
+      "scope": [
+        "runtime"
+      ],
+      "source": "https://www.npmjs.com/package/ws/v/8.21.3",
+      "notices": [
+        {
+          "source": "node_modules/ws/LICENSE",
+          "sha256": "2b29dcfe0d6471f7e8c92c5fb38c9f93edee10330937055440192f1832b1ecef"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "coloredlogs",
+      "version": "15.0.1",
+      "license": "MIT",
+      "scope": [
+        "camera environment"
+      ],
+      "source": "https://pypi.org/project/coloredlogs/15.0.1/",
+      "notices": [
+        {
+          "source": "coloredlogs-15.0.1.dist-info/LICENSE.txt",
+          "sha256": "0bef4ffb1855b65570304f2018c6d44e4bab97bd5df8716ecd7800014d717267"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "flatbuffers",
+      "version": "25.12.19",
+      "license": "Apache-2.0",
+      "scope": [
+        "camera environment"
+      ],
+      "source": "https://pypi.org/project/flatbuffers/25.12.19/",
+      "notices": [
+        {
+          "source": "https://github.com/google/flatbuffers/blob/v25.12.19/LICENSE",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "humanfriendly",
+      "version": "10.0",
+      "license": "MIT",
+      "scope": [
+        "camera environment"
+      ],
+      "source": "https://pypi.org/project/humanfriendly/10.0/",
+      "notices": [
+        {
+          "source": "humanfriendly-10.0.dist-info/LICENSE.txt",
+          "sha256": "4ac48f4117809f2734066150450f120b3bb110ac1d3b32170795e0560dbbc1f5"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "imageio-ffmpeg",
+      "version": "0.6.0",
+      "license": "BSD-2-Clause",
+      "scope": [
+        "camera environment"
+      ],
+      "source": "https://pypi.org/project/imageio-ffmpeg/0.6.0/",
+      "notices": [
+        {
+          "source": "imageio_ffmpeg-0.6.0.dist-info/LICENSE",
+          "sha256": "eca73421d0c905a92e952a553d4d58919c5a507c2c2c76e3c0cf9ba408c299e4"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "mpmath",
+      "version": "1.3.0",
+      "license": "BSD-3-Clause",
+      "scope": [
+        "camera environment"
+      ],
+      "source": "https://pypi.org/project/mpmath/1.3.0/",
+      "notices": [
+        {
+          "source": "mpmath-1.3.0.dist-info/LICENSE",
+          "sha256": "c26cae81da4508e5e249985777a33821f183223ebb74d7f8cfbf90fe7eef2fb7"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "numpy",
+      "version": "2.2.6",
+      "license": "BSD-3-Clause",
+      "scope": [
+        "camera environment"
+      ],
+      "source": "https://pypi.org/project/numpy/2.2.6/",
+      "notices": [
+        {
+          "source": "numpy-2.2.6.dist-info/LICENSE.txt",
+          "sha256": "b4ae62887f4dd6e9430b1a8d7017a3ba84c5d7aa630b9d17ed6f25c21b0ec5b4"
+        },
+        {
+          "source": "numpy/_core/include/numpy/random/LICENSE.txt",
+          "sha256": "fbc539f47d0cf83bc61378080fb873d5c14630126cacbfe754035c3926daa5ec"
+        },
+        {
+          "source": "numpy/ma/LICENSE",
+          "sha256": "05f3b88351988ecfad10abe92c0c50e5875c6452d5009a0084cc291551ffcca6"
+        },
+        {
+          "source": "numpy/random/LICENSE.md",
+          "sha256": "103166b62b80443afb9eb3488e052ea06be0cff566b908f199e561fde49af19f"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "onnxruntime",
+      "version": "1.22.1",
+      "license": "MIT",
+      "scope": [
+        "camera environment"
+      ],
+      "source": "https://pypi.org/project/onnxruntime/1.22.1/",
+      "notices": [
+        {
+          "source": "onnxruntime/LICENSE",
+          "sha256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c"
+        },
+        {
+          "source": "onnxruntime/ThirdPartyNotices.txt",
+          "sha256": "e9e90971a8e75a9a8ac0c6412e29c1202d079998389915aa485f46c816c3b4cc"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "opencv-python-headless",
+      "version": "4.12.0.88",
+      "license": "Apache-2.0 AND MIT",
+      "scope": [
+        "camera environment"
+      ],
+      "source": "https://pypi.org/project/opencv-python-headless/4.12.0.88/",
+      "notices": [
+        {
+          "source": "cv2/LICENSE-3RD-PARTY.txt",
+          "sha256": "6b5966035d16c82b012e120aebff3346c8f0d3e15af1bc5ad9e8be930d8850bf"
+        },
+        {
+          "source": "cv2/LICENSE.txt",
+          "sha256": "09d719058e782ac7bc71ba21c944e1136cde2bb957c0e888121f0218d6b5f02c"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "packaging",
+      "version": "26.3",
+      "license": "Apache-2.0 OR BSD-2-Clause",
+      "scope": [
+        "camera environment",
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/packaging/26.3/",
+      "notices": [
+        {
+          "source": "packaging-26.3.dist-info/licenses/LICENSE",
+          "sha256": "cad1ef5bd340d73e074ba614d26f7deaca5c7940c3d8c34852e65c4909686c48"
+        },
+        {
+          "source": "packaging-26.3.dist-info/licenses/LICENSE.APACHE",
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+        },
+        {
+          "source": "packaging-26.3.dist-info/licenses/LICENSE.BSD",
+          "sha256": "b70e7e9b742f1cc6f948b34c16aa39ffece94196364bc88ff0d2180f0028fac5"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "pip",
+      "version": "26.2.1",
+      "license": "MIT",
+      "scope": [
+        "camera environment",
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/pip/26.2.1/",
+      "notices": [
+        {
+          "source": "pip-26.2.1.dist-info/licenses/LICENSE.txt",
+          "sha256": "634300a669d49aeae65b12c6c48c924c51a4cdf3d1ff086dc3456dc8bcaa2104"
+        },
+        {
+          "source": "pip-26.2.1.dist-info/licenses/src/pip/_vendor/cachecontrol/LICENSE.txt",
+          "sha256": "86eeee87be2a43f3ff1f56496f451f69243926f025fedbb033666c304c4c161b"
+        },
+        {
+          "source": "pip-26.2.1.dist-info/licenses/src/pip/_vendor/certifi/LICENSE",
+          "sha256": "e93716da6b9c0d5a4a1df60fe695b370f0695603d21f6f83f053e42cfc10caf7"
+        },
+        {
+          "source": "pip-26.2.1.dist-info/licenses/src/pip/_vendor/distlib/LICENSE.txt",
+          "sha256": "808e10c8a6ab8deb149ff9b3fb19f447a808094606d712a9ca57fead3552599d"
+        },
+        {
+          "source": "pip-26.2.1.dist-info/licenses/src/pip/_vendor/distro/LICENSE",
+          "sha256": "cb5e8e7e5f4a3988e1063c142c60dc2df75605f4c46515e776e3aca6df976e14"
+        },
+        {
+          "source": "pip-26.2.1.dist-info/licenses/src/pip/_vendor/idna/LICENSE.md",
+          "sha256": "1a9a4f0e3d479a27240ddd59a9137a66ab4a0f9dfdc8ca6188cc0bfd85187f04"
+        },
+        {
+          "source": "pip-26.2.1.dist-info/licenses/src/pip/_vendor/msgpack/COPYING",
+          "sha256": "492dedba85da5872f78e6091bcd1fea474d660d35acb4dee964b8aab3f007427"
+        },
+        {
+          "source": "pip-26.2.1.dist-info/licenses/src/pip/_vendor/packaging/LICENSE",
+          "sha256": "cad1ef5bd340d73e074ba614d26f7deaca5c7940c3d8c34852e65c4909686c48"
+        },
+        {
+          "source": "pip-26.2.1.dist-info/licenses/src/pip/_vendor/packaging/LICENSE.APACHE",
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+        },
+        {
+          "source": "pip-26.2.1.dist-info/licenses/src/pip/_vendor/packaging/LICENSE.BSD",
+          "sha256": "b70e7e9b742f1cc6f948b34c16aa39ffece94196364bc88ff0d2180f0028fac5"
+        },
+        {
+          "source": "pip-26.2.1.dist-info/licenses/src/pip/_vendor/pkg_resources/LICENSE",
+          "sha256": "86da0f01aeae46348a3c3d465195dc1ceccde79f79e87769a64b8da04b2a4741"
+        },
+        {
+          "source": "pip-26.2.1.dist-info/licenses/src/pip/_vendor/platformdirs/LICENSE",
+          "sha256": "29e0fd62e929850e86eb28c3fdccf0cefdf4fa94879011cffb3d0d4bed6d4db6"
+        },
+        {
+          "source": "pip-26.2.1.dist-info/licenses/src/pip/_vendor/pygments/LICENSE",
+          "sha256": "a9d66f1d526df02e29dce73436d34e56e8632f46c275bbdffc70569e882f9f17"
+        },
+        {
+          "source": "pip-26.2.1.dist-info/licenses/src/pip/_vendor/pyproject_hooks/LICENSE",
+          "sha256": "1b22b049b5267d6dfc23a67bf4a84d8ec04b9fdfb1a51d360e42b4342c8b4154"
+        },
+        {
+          "source": "pip-26.2.1.dist-info/licenses/src/pip/_vendor/requests/LICENSE",
+          "sha256": "09e8a9bcec8067104652c168685ab0931e7868f9c8284b66f5ae6edae5f1130b"
+        },
+        {
+          "source": "pip-26.2.1.dist-info/licenses/src/pip/_vendor/resolvelib/LICENSE",
+          "sha256": "f388fd38cad13112c1dc0f669bbe80e7f84541edbafb72f3030d2ca7642c3c9d"
+        },
+        {
+          "source": "pip-26.2.1.dist-info/licenses/src/pip/_vendor/rich/LICENSE",
+          "sha256": "deed7c17a4318158190a3ea239cc879a5a50271cebb98ae7025f48fbe58dca15"
+        },
+        {
+          "source": "pip-26.2.1.dist-info/licenses/src/pip/_vendor/tomli/LICENSE",
+          "sha256": "b80816b0d530b8accb4c2211783790984a6e3b61922c2b5ee92f3372ab2742fe"
+        },
+        {
+          "source": "pip-26.2.1.dist-info/licenses/src/pip/_vendor/truststore/LICENSE",
+          "sha256": "33be7b7e8fa4fd19b1760e1a8ed8a668bdab852c91b692dd41424bcb725a9fca"
+        },
+        {
+          "source": "pip-26.2.1.dist-info/licenses/src/pip/_vendor/urllib3/LICENSE.txt",
+          "sha256": "130e3a64d5fdd5d096a752694634a7d9df284469de86e5732100268041e3d686"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "protobuf",
+      "version": "7.36.1",
+      "license": "BSD-3-Clause",
+      "scope": [
+        "camera environment"
+      ],
+      "source": "https://pypi.org/project/protobuf/7.36.1/",
+      "notices": [
+        {
+          "source": "protobuf-7.36.1.dist-info/LICENSE",
+          "sha256": "6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "setuptools",
+      "version": "84.0.0",
+      "license": "MIT",
+      "scope": [
+        "camera environment",
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/setuptools/84.0.0/",
+      "notices": [
+        {
+          "source": "setuptools-84.0.0.dist-info/licenses/LICENSE",
+          "sha256": "86da0f01aeae46348a3c3d465195dc1ceccde79f79e87769a64b8da04b2a4741"
+        },
+        {
+          "source": "setuptools/_vendor/autocommand-2.2.2.dist-info/LICENSE",
+          "sha256": "ade78d04982d69972d444a8e14a94f87a2334dd3855cc80348ea8e240aa0df2d"
+        },
+        {
+          "source": "setuptools/_vendor/importlib_metadata-8.7.1.dist-info/licenses/LICENSE",
+          "sha256": "458502e12d97bbf64438606a20044aa85eb05fb0a8a807bb35dbec253fd1fc04"
+        },
+        {
+          "source": "setuptools/_vendor/jaraco_context-6.1.0.dist-info/licenses/LICENSE",
+          "sha256": "9755a18519666e5f0f4cae3daad3d7012bcae48a600b31237d75e9fe134e6683"
+        },
+        {
+          "source": "setuptools/_vendor/jaraco_functools-4.4.0.dist-info/licenses/LICENSE",
+          "sha256": "5a57cb4db85e2a2dd88c290628908add57e3451449e0a9a71fdfb38776fd759d"
+        },
+        {
+          "source": "setuptools/_vendor/more_itertools-10.8.0.dist-info/licenses/LICENSE",
+          "sha256": "09f1c8c9e941af3e584d59641ea9b87d83c0cb0fd007eb5ef391a7e2643c1a46"
+        },
+        {
+          "source": "setuptools/_vendor/packaging-26.0.dist-info/licenses/LICENSE",
+          "sha256": "cad1ef5bd340d73e074ba614d26f7deaca5c7940c3d8c34852e65c4909686c48"
+        },
+        {
+          "source": "setuptools/_vendor/packaging-26.0.dist-info/licenses/LICENSE.APACHE",
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+        },
+        {
+          "source": "setuptools/_vendor/packaging-26.0.dist-info/licenses/LICENSE.BSD",
+          "sha256": "b70e7e9b742f1cc6f948b34c16aa39ffece94196364bc88ff0d2180f0028fac5"
+        },
+        {
+          "source": "setuptools/_vendor/platformdirs-4.4.0.dist-info/licenses/LICENSE",
+          "sha256": "29e0fd62e929850e86eb28c3fdccf0cefdf4fa94879011cffb3d0d4bed6d4db6"
+        },
+        {
+          "source": "setuptools/_vendor/tomli-2.4.0.dist-info/licenses/LICENSE",
+          "sha256": "b80816b0d530b8accb4c2211783790984a6e3b61922c2b5ee92f3372ab2742fe"
+        },
+        {
+          "source": "setuptools/_vendor/wheel-0.46.3.dist-info/licenses/LICENSE.txt",
+          "sha256": "30c23618679108f3e8ea1d2a658c7ca417bdfc891c98ef1a89fa4ff0c9828654"
+        },
+        {
+          "source": "setuptools/config/NOTICE",
+          "sha256": "2dddf08818297a3b89d43d95ff659d8da85741108c9136dfa3a4d856c0623bd8"
+        },
+        {
+          "source": "setuptools/config/_validate_pyproject/NOTICE",
+          "sha256": "09c9bcea95ca086f8bc5bed174e40bc835b297d40fb5f86bbbb570fe0a5581a7"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "sympy",
+      "version": "1.14.0",
+      "license": "BSD-3-Clause",
+      "scope": [
+        "camera environment"
+      ],
+      "source": "https://pypi.org/project/sympy/1.14.0/",
+      "notices": [
+        {
+          "source": "sympy-1.14.0.dist-info/licenses/LICENSE",
+          "sha256": "07a5e9819f727b4986ad2829c7a29a6320d42575f720eb24d71b7fef573a0286"
+        },
+        {
+          "source": "sympy/parsing/latex/LICENSE.txt",
+          "sha256": "007bc30a58fa40a996e772047120de4eaf31f5110e4f9c3b5f93fcdfbe2eaca1"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "boolean.py",
+      "version": "5.0",
+      "license": "BSD-2-Clause",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/boolean.py/5.0/",
+      "notices": [
+        {
+          "source": "boolean_py-5.0.dist-info/licenses/LICENSE.txt",
+          "sha256": "5ea0cdf8cfc824b446cccf597ff6518c3607a659e9804bc75f1261f9c6ac4ada"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "CacheControl",
+      "version": "0.14.4",
+      "license": "Apache-2.0",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/CacheControl/0.14.4/",
+      "notices": [
+        {
+          "source": "cachecontrol-0.14.4.dist-info/licenses/LICENSE.txt",
+          "sha256": "86eeee87be2a43f3ff1f56496f451f69243926f025fedbb033666c304c4c161b"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "certifi",
+      "version": "2026.7.22",
+      "license": "MPL-2.0",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/certifi/2026.7.22/",
+      "notices": [
+        {
+          "source": "certifi-2026.7.22.dist-info/licenses/LICENSE",
+          "sha256": "e93716da6b9c0d5a4a1df60fe695b370f0695603d21f6f83f053e42cfc10caf7"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "charset-normalizer",
+      "version": "3.5.1",
+      "license": "MIT",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/charset-normalizer/3.5.1/",
+      "notices": [
+        {
+          "source": "charset_normalizer-3.5.1.dist-info/licenses/LICENSE",
+          "sha256": "6d0d41bfe170ac6c7dc248c9a63e254d0fb45a60d50a8257d0af92c6e249b887"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "cyclonedx-python-lib",
+      "version": "11.12.0",
+      "license": "Apache-2.0",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/cyclonedx-python-lib/11.12.0/",
+      "notices": [
+        {
+          "source": "cyclonedx/factory/__pycache__/license.cpython-311.pyc",
+          "sha256": "32d7b286536a98cca49654cd1e8b738660b8eb37d2ebbf38cfba930d904ca4fc"
+        },
+        {
+          "source": "cyclonedx/factory/license.py",
+          "sha256": "021381eed6e355e7d325cb3e22dfd5ab1e3d244839467fada27ab3b3f6f7beb6"
+        },
+        {
+          "source": "cyclonedx/model/__pycache__/license.cpython-311.pyc",
+          "sha256": "b754af478d44cb9da89a6688a72efa719c7c0055e23e46afef46a9c3043a3ceb"
+        },
+        {
+          "source": "cyclonedx/model/license.py",
+          "sha256": "245ab06d6246854878c3a00d7183353c53634568d01af27791ffa9f8b122f34a"
+        },
+        {
+          "source": "cyclonedx_python_lib-11.12.0.dist-info/licenses/LICENSE",
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+        },
+        {
+          "source": "cyclonedx_python_lib-11.12.0.dist-info/licenses/NOTICE",
+          "sha256": "1c3bd67b96888a4ca25f3a94683d929b3f66d7e4cdfe6c04d24f16501a9375c3"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "defusedxml",
+      "version": "0.7.1",
+      "license": "PSF-2.0",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/defusedxml/0.7.1/",
+      "notices": [
+        {
+          "source": "defusedxml-0.7.1.dist-info/LICENSE",
+          "sha256": "b80ce9da8c42a1f91079627fbbe2bf27210ae108a0ffe5f077d5b08e076c24c8"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "filelock",
+      "version": "4.0.0",
+      "license": "MIT",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/filelock/4.0.0/",
+      "notices": [
+        {
+          "source": "filelock-4.0.0.dist-info/licenses/LICENSE",
+          "sha256": "608c89d5060ae9921adccf3236695bc654a9946e12323ef6c021dfa04e294d48"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "idna",
+      "version": "3.19",
+      "license": "BSD-3-Clause",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/idna/3.19/",
+      "notices": [
+        {
+          "source": "idna-3.19.dist-info/licenses/LICENSE.md",
+          "sha256": "1a9a4f0e3d479a27240ddd59a9137a66ab4a0f9dfdc8ca6188cc0bfd85187f04"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "license-expression",
+      "version": "30.4.4",
+      "license": "Apache-2.0",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/license-expression/30.4.4/",
+      "notices": [
+        {
+          "source": "license_expression-30.4.4.dist-info/licenses/NOTICE",
+          "sha256": "ef97db07e32f6e5d34363461acf5acc7d72db924533bce3d9f3b87046313363c"
+        },
+        {
+          "source": "license_expression-30.4.4.dist-info/licenses/apache-2.0.LICENSE",
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+        },
+        {
+          "source": "license_expression/data/cc-by-4.0.LICENSE",
+          "sha256": "2a82ac9bbc3e3ee066908381e8d373896db5a6025d083fbd59692fe9ccfb9111"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "markdown-it-py",
+      "version": "4.2.0",
+      "license": "MIT",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/markdown-it-py/4.2.0/",
+      "notices": [
+        {
+          "source": "markdown_it_py-4.2.0.dist-info/licenses/LICENSE",
+          "sha256": "4a2260d6e2cd0f5a151a1e86dbfe7d3ed552b1e2beabf9941c1ba5c49cbce484"
+        },
+        {
+          "source": "markdown_it_py-4.2.0.dist-info/licenses/LICENSE.markdown-it",
+          "sha256": "792c48c5a849a15fdf9e37e8bcf9e6d1dd13b32b46c642a748a0a46a9919d473"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "mdurl",
+      "version": "0.1.2",
+      "license": "MIT",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/mdurl/0.1.2/",
+      "notices": [
+        {
+          "source": "mdurl-0.1.2.dist-info/LICENSE",
+          "sha256": "7c605df6e28667a9603118e98274f64a49ce3eed0d26fccce9534a345e0ef955"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "msgpack",
+      "version": "1.2.2",
+      "license": "Apache-2.0",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/msgpack/1.2.2/",
+      "notices": [
+        {
+          "source": "msgpack-1.2.2.dist-info/licenses/COPYING",
+          "sha256": "492dedba85da5872f78e6091bcd1fea474d660d35acb4dee964b8aab3f007427"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "packageurl-python",
+      "version": "0.17.6",
+      "license": "MIT",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/packageurl-python/0.17.6/",
+      "notices": [
+        {
+          "source": "https://github.com/package-url/packageurl-python/blob/v0.17.6/mit.LICENSE",
+          "sha256": "8e442c79545ac0c0a1a2cf0cf213312a45826acd6cdc6af223447dd5f708ee5d"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "pip-requirements-parser",
+      "version": "32.0.1",
+      "license": "MIT",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/pip-requirements-parser/32.0.1/",
+      "notices": [
+        {
+          "source": "pip_requirements_parser-32.0.1.dist-info/mit.LICENSE",
+          "sha256": "18081c2c82771ca09d99d08cdac405924309e09fd19b16f1eea59cbc6ab809ed"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "pip_api",
+      "version": "0.0.35",
+      "license": "Apache-2.0",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/pip_api/0.0.35/",
+      "notices": [
+        {
+          "source": "pip_api-0.0.35.dist-info/licenses/LICENSE",
+          "sha256": "14ed54990120efea26042269885df36e1b53db858bf04b40c8cfc8c5e12f6fb1"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "pip_audit",
+      "version": "2.10.1",
+      "license": "Apache-2.0",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/pip_audit/2.10.1/",
+      "notices": [
+        {
+          "source": "pip_audit-2.10.1.dist-info/licenses/LICENSE",
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "platformdirs",
+      "version": "4.11.9",
+      "license": "MIT",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/platformdirs/4.11.9/",
+      "notices": [
+        {
+          "source": "platformdirs-4.11.9.dist-info/licenses/LICENSE",
+          "sha256": "29e0fd62e929850e86eb28c3fdccf0cefdf4fa94879011cffb3d0d4bed6d4db6"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "py-serializable",
+      "version": "2.1.0",
+      "license": "Apache-2.0",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/py-serializable/2.1.0/",
+      "notices": [
+        {
+          "source": "py_serializable-2.1.0.dist-info/LICENSE",
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "Pygments",
+      "version": "2.21.0",
+      "license": "BSD-2-Clause",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/Pygments/2.21.0/",
+      "notices": [
+        {
+          "source": "pygments-2.21.0.dist-info/licenses/LICENSE",
+          "sha256": "a9d66f1d526df02e29dce73436d34e56e8632f46c275bbdffc70569e882f9f17"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "pyparsing",
+      "version": "3.3.2",
+      "license": "MIT",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/pyparsing/3.3.2/",
+      "notices": [
+        {
+          "source": "pyparsing-3.3.2.dist-info/licenses/LICENSE",
+          "sha256": "a5425f9dc14ac74d4c5f0b679e941f2442e32cca7452a4418d5b1a49893ebe4e"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "requests",
+      "version": "2.34.2",
+      "license": "Apache-2.0",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/requests/2.34.2/",
+      "notices": [
+        {
+          "source": "requests-2.34.2.dist-info/licenses/LICENSE",
+          "sha256": "09e8a9bcec8067104652c168685ab0931e7868f9c8284b66f5ae6edae5f1130b"
+        },
+        {
+          "source": "requests-2.34.2.dist-info/licenses/NOTICE",
+          "sha256": "f5110972dedad2b4e9d314518daf3b7d72d6e02e499acd802181de6f74571dcc"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "rich",
+      "version": "15.0.0",
+      "license": "MIT",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/rich/15.0.0/",
+      "notices": [
+        {
+          "source": "rich-15.0.0.dist-info/licenses/LICENSE",
+          "sha256": "deed7c17a4318158190a3ea239cc879a5a50271cebb98ae7025f48fbe58dca15"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "sortedcontainers",
+      "version": "2.4.0",
+      "license": "Apache-2.0",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/sortedcontainers/2.4.0/",
+      "notices": [
+        {
+          "source": "sortedcontainers-2.4.0.dist-info/LICENSE",
+          "sha256": "1db7cae7fce6452e2e608e401a0f953e0133e4c2d75db69fb8ae851d2086f5b6"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "tomli",
+      "version": "2.4.1",
+      "license": "MIT",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/tomli/2.4.1/",
+      "notices": [
+        {
+          "source": "tomli-2.4.1.dist-info/licenses/LICENSE",
+          "sha256": "b80816b0d530b8accb4c2211783790984a6e3b61922c2b5ee92f3372ab2742fe"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "tomli_w",
+      "version": "1.2.0",
+      "license": "MIT",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/tomli_w/1.2.0/",
+      "notices": [
+        {
+          "source": "tomli_w-1.2.0.dist-info/LICENSE",
+          "sha256": "b80816b0d530b8accb4c2211783790984a6e3b61922c2b5ee92f3372ab2742fe"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "typing_extensions",
+      "version": "4.16.0",
+      "license": "PSF-2.0",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/typing_extensions/4.16.0/",
+      "notices": [
+        {
+          "source": "typing_extensions-4.16.0.dist-info/licenses/LICENSE",
+          "sha256": "3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf"
+        }
+      ]
+    },
+    {
+      "ecosystem": "PyPI",
+      "name": "urllib3",
+      "version": "2.8.0",
+      "license": "MIT",
+      "scope": [
+        "audit tools"
+      ],
+      "source": "https://pypi.org/project/urllib3/2.8.0/",
+      "notices": [
+        {
+          "source": "urllib3-2.8.0.dist-info/licenses/LICENSE.txt",
+          "sha256": "130e3a64d5fdd5d096a752694634a7d9df284469de86e5732100268041e3d686"
+        }
+      ]
+    },
+    {
+      "ecosystem": "tool",
+      "name": "Gitleaks",
+      "version": "8.30.1",
+      "license": "MIT",
+      "scope": [
+        "security tooling"
+      ],
+      "source": "https://github.com/gitleaks/gitleaks/blob/v8.30.1/LICENSE",
+      "notices": [
+        {
+          "source": "https://github.com/gitleaks/gitleaks/blob/v8.30.1/LICENSE",
+          "sha256": "e3884b252b3bfc045e55be43a34d1e80da070bc6f804ac95bf4660e97d62ebc6"
+        }
+      ]
+    },
+    {
+      "ecosystem": "tool",
+      "name": "actions/checkout",
+      "version": "11d5960a326750d5838078e36cf38b85af677262",
+      "license": "MIT",
+      "scope": [
+        "security tooling"
+      ],
+      "source": "https://github.com/actions/checkout/blob/11d5960a326750d5838078e36cf38b85af677262/LICENSE",
+      "notices": [
+        {
+          "source": "https://github.com/actions/checkout/blob/11d5960a326750d5838078e36cf38b85af677262/LICENSE",
+          "sha256": "3e855ffa704114a51628ef8f0bf3aeb41728adf9d9070e263bf58aa5640b0eb5"
+        }
+      ]
+    },
+    {
+      "ecosystem": "tool",
+      "name": "actions/setup-node",
+      "version": "49933ea5288caeca8642d1e84afbd3f7d6820020",
+      "license": "MIT",
+      "scope": [
+        "security tooling"
+      ],
+      "source": "https://github.com/actions/setup-node/blob/49933ea5288caeca8642d1e84afbd3f7d6820020/LICENSE",
+      "notices": [
+        {
+          "source": "https://github.com/actions/setup-node/blob/49933ea5288caeca8642d1e84afbd3f7d6820020/LICENSE",
+          "sha256": "7d070f6b64d9bcc530fe99cc21eaaa4b3c364e0b2d367d7735671fa202a03b32"
+        }
+      ]
+    },
+    {
+      "ecosystem": "tool",
+      "name": "actions/setup-python",
+      "version": "a26af69be951a213d495a4c3e4e4022e16d87065",
+      "license": "MIT",
+      "scope": [
+        "security tooling"
+      ],
+      "source": "https://github.com/actions/setup-python/blob/a26af69be951a213d495a4c3e4e4022e16d87065/LICENSE",
+      "notices": [
+        {
+          "source": "https://github.com/actions/setup-python/blob/a26af69be951a213d495a4c3e4e4022e16d87065/LICENSE",
+          "sha256": "7d070f6b64d9bcc530fe99cc21eaaa4b3c364e0b2d367d7735671fa202a03b32"
+        }
+      ]
+    }
+  ]
+}

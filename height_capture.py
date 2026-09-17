@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Flashforge Health contributors
+# SPDX-License-Identifier: AGPL-3.0-only
 """Read-only A5MP built-in camera capture and local height analysis."""
 import base64
 import json

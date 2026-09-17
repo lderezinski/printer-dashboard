@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Flashforge Health contributors
+# SPDX-License-Identifier: AGPL-3.0-only
 """Integrated-camera routing and bounded capture, with no network requests."""
 import io
 import json

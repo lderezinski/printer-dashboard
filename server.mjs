@@ -1,3 +1,5 @@
+// Copyright (C) 2026 Flashforge Health contributors
+// SPDX-License-Identifier: AGPL-3.0-only
 import http from 'node:http';
 import { lanAddresses, requestAccessError, canUseLocalTools } from './network.mjs';
 import { securitySettings, viewerMaintenance } from './security.mjs';

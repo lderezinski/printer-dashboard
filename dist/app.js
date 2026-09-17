@@ -1,3 +1,5 @@
+// Copyright (C) 2026 Flashforge Health contributors
+// SPDX-License-Identifier: AGPL-3.0-only
 import { inspectGcode, readTimeEstimate, HEADER_LIMIT } from './gcode.js';
 import { initHeight, renderHeight } from './height.js';
 const $ = selector => document.querySelector(selector);

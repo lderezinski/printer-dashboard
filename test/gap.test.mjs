@@ -1,3 +1,5 @@
+// Copyright (C) 2026 Flashforge Health contributors
+// SPDX-License-Identifier: AGPL-3.0-only
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DARK_CHESS_RULE, DARK_CHESS_JOB, GapMonitor, summarizeGapLayer } from '../gap.mjs';

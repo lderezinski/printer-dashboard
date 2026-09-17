@@ -1,5 +1,6 @@
 {
   "url": "https://tsd-pub-static.s3.amazonaws.com/ml-models/model-weights-5a6b1be1fa.onnx",
   "sha256": "0a6ebd8e30dbf6a450c50f9c0a5406f04ba7eb1c99fd5996e888c78bb383b9aa",
-  "sourceCommit": "49c0bc7001a3fd8d56297fc3032ba287bfe1d50b"
+  "sourceCommit": "49c0bc7001a3fd8d56297fc3032ba287bfe1d50b",
+  "weightsLicenseStatus": "Unverified: see THIRD_PARTY_NOTICES.md#model-weights; the source-code license is not a verified license grant for these separately downloaded weights."
 }

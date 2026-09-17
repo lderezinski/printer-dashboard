@@ -1,3 +1,5 @@
+// Copyright (C) 2026 Flashforge Health contributors
+// SPDX-License-Identifier: AGPL-3.0-only
 export const MODELS = [
   { id: 'ad5m', name: 'AD5M', model: 'Adventurer 5M', tools: 1, defaultHost: '192.168.50.101' },
   { id: 'a5mp', name: 'A5MP', model: 'Adventurer 5M Pro', tools: 1, defaultHost: '192.168.50.102' },

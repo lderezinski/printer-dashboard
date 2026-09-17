@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Flashforge Health contributors
+# SPDX-License-Identifier: AGPL-3.0-only
 """Synthetic gap, travel and occlusion tests; not live failure validation."""
 import sys
 from pathlib import Path

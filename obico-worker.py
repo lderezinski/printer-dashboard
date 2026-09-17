@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Flashforge Health contributors
+# SPDX-License-Identifier: AGPL-3.0-only
 """Local camera capture and inference using Obico's official ONNX model."""
 import base64
 import hashlib

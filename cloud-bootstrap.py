@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Flashforge Health contributors
+# SPDX-License-Identifier: AGPL-3.0-only
 """Private IPC helper. Read-only Flash Studio session bootstrap; never run in a terminal.
 The parent captures stdout in memory. No credentials are written to disk or browser APIs.
 """

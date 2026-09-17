@@ -1,3 +1,5 @@
+// Copyright (C) 2026 Flashforge Health contributors
+// SPDX-License-Identifier: AGPL-3.0-only
 import snmp from 'net-snmp';
 import { validateConfig } from './printer.mjs';
 

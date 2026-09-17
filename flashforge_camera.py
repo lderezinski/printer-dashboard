@@ -1,3 +1,5 @@
+# Copyright (C) 2026 Flashforge Health contributors
+# SPDX-License-Identifier: AGPL-3.0-only
 """Bounded, read-only capture from Flashforge's integrated MJPEG cameras."""
 import ipaddress
 import json

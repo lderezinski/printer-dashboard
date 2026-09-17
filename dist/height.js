@@ -1,3 +1,5 @@
+// Copyright (C) 2026 Flashforge Health contributors
+// SPDX-License-Identifier: AGPL-3.0-only
 const el = part => document.getElementById(`height-${part}`);
 const labels = { disabled: 'Disabled', calibration: 'Mark nozzle & part', watching: 'Watching this layer', tracking: 'No sustained widening', suspect: 'Inspect print', warning: 'Possible air printing', unknown: 'Cannot measure', idle: 'Waiting for printing' };
 const px = value => Number.isFinite(value) ? `${value.toFixed(1)} px` : '—';

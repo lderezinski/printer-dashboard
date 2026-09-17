@@ -8,6 +8,25 @@ You'll need Node.js 22 or newer and Flash Studio installed and signed in on the 
 
 Real settings belong in `data/`, which stays out of Git. The examples in `data.example/` have the private details removed. Please keep it that way.
 
+## License
+
+The original dashboard code is licensed under the **GNU Affero General Public
+License, version 3 only** (`AGPL-3.0-only`). See [LICENSE](LICENSE).
+Copyright (C) 2026 Flashforge Health contributors.
+
+You can use, modify, and share it, including commercially, under those terms.
+Keep the notices and provide the corresponding source when the license requires
+it, including an offer to users interacting with a modified version over a network.
+There is no warranty. The printers will still have their own opinions.
+
+Other people's code keeps its own license. The full review and dependency list
+are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), with collected upstream
+notices in [licenses/third-party.txt](licenses/third-party.txt).
+**The Obico model weights and Flashforge's non-free networking library are not
+cleared for redistribution by this review.** They aren't included in this
+repository, and the dashboard's AGPL license doesn't grant rights to them.
+Read the review before packaging a ready-to-run download or offering a hosted service.
+
 ## Get it running
 
 ```sh
@@ -67,7 +86,9 @@ gap check, disabled by default and described below. When enabled, it keeps its
 own annotations, result, capture time, and history. An alert from either check
 contributes to **Need attention**.
 
-All spaghetti checks use Obico's official open-source ONNX model. Each
+All spaghetti checks use Obico's official downloadable ONNX model. The inference
+code is AGPL-licensed; explicit licensing terms for the separate weights remain
+unverified (see [the license review](THIRD_PARTY_NOTICES.md#model-weights)). Each
 analyzes a new frame about every 20–25 seconds while its own fresh printer
 status says `printing`. Camera addresses follow the printer hosts in
 `data/printers.json`, using `http://PRINTER_IP:8080/?action=stream`. Internal cameras require no separate camera account. A missing or

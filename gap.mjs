@@ -1,3 +1,5 @@
+// Copyright (C) 2026 Flashforge Health contributors
+// SPDX-License-Identifier: AGPL-3.0-only
 import { spawn, execFile } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import { readFile, writeFile, rename } from 'node:fs/promises';
