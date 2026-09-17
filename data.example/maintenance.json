@@ -1,0 +1,53 @@
+{
+  "ad5m": {
+    "observedSeconds": 3600,
+    "trackingSince": "2026-01-01T00:00:00.000Z",
+    "schedules": [
+      {
+        "id": "lubricate-rods",
+        "name": "Lubricate guide rods",
+        "hours": 100,
+        "days": null,
+        "initialDueLifetimeHours": null,
+        "since": "2026-01-01T00:00:00.000Z",
+        "baselineSeconds": 0,
+        "lastServiced": null
+      }
+    ],
+    "serviceHistory": [],
+    "baseline": {
+      "printingSeconds": 360000,
+      "materialCm": 250000,
+      "machineName": "Example AD5M",
+      "firmwareVersion": "0.0.0-example",
+      "serialNumber": "EXAMPLE-SERIAL-NUMBER",
+      "nozzleDiameters": [0.4],
+      "buildVolume": [220, 220, 220],
+      "recordedAt": "2026-01-01T00:00:00.000Z",
+      "observedSecondsAtCapture": 0,
+      "source": "User-provided printer information screenshot",
+      "maintenanceAlignment": "from-baseline"
+    }
+  },
+  "a5mp": {
+    "observedSeconds": 0,
+    "trackingSince": "2026-01-01T00:00:00.000Z",
+    "schedules": [],
+    "serviceHistory": [],
+    "baseline": null
+  },
+  "c5": {
+    "observedSeconds": 0,
+    "trackingSince": "2026-01-01T00:00:00.000Z",
+    "schedules": [],
+    "serviceHistory": [],
+    "baseline": null
+  },
+  "c5p": {
+    "observedSeconds": 0,
+    "trackingSince": "2026-01-01T00:00:00.000Z",
+    "schedules": [],
+    "serviceHistory": [],
+    "baseline": null
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "runs": [
+    {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "printerId": "a5mp",
+      "job": "example-part.3mf",
+      "createdAt": "2026-01-15T14:00:00.000Z",
+      "firstSeenAt": "2026-01-15T14:00:00.000Z",
+      "startedAt": "2026-01-15T14:00:00.000Z",
+      "lastSeenAt": "2026-01-15T15:30:00.000Z",
+      "endedAt": "2026-01-15T15:30:00.000Z",
+      "status": "completed",
+      "origin": "monitor",
+      "hasGap": false,
+      "notes": [],
+      "estimate": {
+        "seconds": 5100,
+        "source": "manual",
+        "filename": null,
+        "generatedBy": null,
+        "savedAt": "2026-01-15T14:00:00.000Z"
+      },
+      "actualOverrideSeconds": null,
+      "outcomeOverride": null,
+      "lastState": "printing"
+    }
+  ]
+}

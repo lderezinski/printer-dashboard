@@ -2,6 +2,9 @@
 
 A local dashboard with live cloud monitoring, remaining-time estimates, print history, and independent maintenance reminders for AD5M, Adventurer 5M Pro, Creator 5 and Creator 5 Pro. Flashforge cloud stays enabled. Requires Node.js 22 or newer and your installed, signed-in Flash Studio on this Mac. Dependencies are installed; for a new checkout run `npm ci` first.
 
+Sanitized examples for the private files stored under `data/` are available in
+`data.example/`.
+
 ## Run
 
 ```sh

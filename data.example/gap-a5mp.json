@@ -1,0 +1,12 @@
+{
+  "nozzle": [320, 210],
+  "top": [320, 225],
+  "anchor": [80, 80],
+  "id": "00000000-0000-4000-8000-000000000002",
+  "jobKey": "example-print-run",
+  "job": "example-part.3mf",
+  "referenceLayer": 2,
+  "referenceFile": "gap-reference-00000000-0000-4000-8000-000000000002.jpg",
+  "calibratedAt": "2026-01-15T14:05:00.000Z",
+  "rule": "light-head-dark-chess-v1"
+}
