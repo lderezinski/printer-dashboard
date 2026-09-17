@@ -1,0 +1,4 @@
+# Setup/audit tools only; not camera inference dependencies.
+pip==26.2.1
+setuptools==84.0.0
+pip-audit==2.10.1

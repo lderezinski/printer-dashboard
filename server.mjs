@@ -1,5 +1,6 @@
 import http from 'node:http';
 import { lanAddresses, requestAccessError, canUseLocalTools } from './network.mjs';
+import { securitySettings, viewerMaintenance } from './security.mjs';
 import { CloudMonitor } from './cloud.mjs';
 import { ObicoMonitor } from './obico.mjs';
 import { GapMonitor } from './gap.mjs';
@@ -14,6 +15,18 @@ import { readPrinterQueue } from './printer-queue.mjs';
 import { createRecord, upgradeRecord, setBaseline, alignInitialReminders, accrue, setSchedule, markServiced, maintenanceStatus } from './maintenance.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
+let securityFile = {};
+try { securityFile = JSON.parse(await readFile(path.join(root, 'data', 'security.json'), 'utf8')); }
+catch (error) { if (error.code !== 'ENOENT') throw new Error('Cannot read data/security.json. Repair this file before starting.'); }
+const security = securitySettings(securityFile);
+let dashboardConfig = {};
+try { dashboardConfig = JSON.parse(await readFile(path.join(root, 'data', 'dashboard.json'), 'utf8')); }
+catch (error) { if (error.code !== 'ENOENT') throw new Error('Cannot read data/dashboard.json. Repair this file before starting.'); }
+if (!dashboardConfig || typeof dashboardConfig !== 'object' || Array.isArray(dashboardConfig)
+  || Object.keys(dashboardConfig).some(key => key !== 'heading')) throw new Error('Invalid data/dashboard.json. Only heading is supported.');
+const dashboardHeading = dashboardConfig.heading ?? 'Printer dashboard';
+if (typeof dashboardHeading !== 'string' || !dashboardHeading.trim() || dashboardHeading.trim().length > 100
+  || /[\r\n]/.test(dashboardHeading)) throw new Error('Dashboard heading must be a single line of 1–100 characters.');
 const configFile = path.join(root, 'data', 'printers.json');
 const historyFile = path.join(root, 'data', 'history.json');
 const historyObservations = new Map();
@@ -90,7 +103,7 @@ laserInterval.unref();
 void pollLaserPrinters();
 const samples = new Map();
 const observations = new Map();
-const cloud = new CloudMonitor(() => config);
+const cloud = new CloudMonitor(() => config, { allowInsecureMqtt: security.allowInsecureMqtt });
 const cloudEnabled = process.env.FLASHFORGE_CLOUD !== 'off';
 if (cloudEnabled) cloud.start();
 let maintenance = {};
@@ -167,17 +180,18 @@ heightMonitor.start();
 let heightSaving = false;
 for (const camera of [...Object.values(cameras), ...Object.values(externalCameras)]) camera.start();
 
-function printers() {
+function printers(localTools = false) {
   return MODELS.map(printer => {
     const settings = config[printer.id] || {};
     const configured = Boolean(settings.host);
     return { ...printer, host: settings.host || '', configured,
-      maintenance: maintenanceStatus(maintenance[printer.id], cloudEnabled || printer.tools === 1 || Boolean(settings.serialNumber && settings.checkCode)),
+      maintenance: viewerMaintenance(maintenanceStatus(maintenance[printer.id], cloudEnabled || printer.tools === 1 || Boolean(settings.serialNumber && settings.checkCode)), localTools),
       ...(configured ? samples.get(printer.id) || { connected: false, state: 'Connecting', health: 'unknown', message: 'Waiting for the first reading.' } : { connected: false, state: 'Not connected', health: 'unknown', message: 'Add this printer’s connection details.' }) };
   });
 }
 const headers = {
   'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'no-referrer', 'Cross-Origin-Resource-Policy': 'same-origin',
   'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
 };
 function json(res, status, value) { res.writeHead(status, { ...headers, 'Content-Type': 'application/json' }); res.end(JSON.stringify(value)); }
@@ -190,7 +204,7 @@ const assets = new Map([['/', ['index.html', 'text/html']], ['/app.js', ['app.js
 assets.set('/height.js', ['height.js', 'text/javascript']);
 const server = http.createServer(async (req, res) => {
   // Exact Host/Origin checks restrict dashboard access to this Mac and its LAN.
-  const accessError = requestAccessError(req, port);
+  const accessError = requestAccessError(req, port, lanAddresses(), security);
   if (accessError) return json(res, 403, { error: accessError });
   const url = new URL(req.url, `http://127.0.0.1:${port}`);
   try {
@@ -214,7 +228,7 @@ const server = http.createServer(async (req, res) => {
       finally { heightSaving = false; }
       return json(res, 200, { saved: true, height: heightMonitor.view() });
     }
-    if (req.method === 'GET' && url.pathname === '/api/printers') return json(res, 200, { capabilities: { localTools: canUseLocalTools(req, port) }, camera: externalCameras.ad5m.view(), cameras: Object.fromEntries(Object.entries(cameras).map(([id, camera]) => [id, camera.view()])), externalCameras: Object.fromEntries(Object.entries(externalCameras).map(([id, camera]) => [id, camera.view()])), cloud: cloud.status, printers: printers(), laserPrinters: laserPrinters(), checkedAt: new Date().toISOString(), storageError: [storageError, historyStorageError].filter(Boolean).join(' '), history: history.runs.map(timingView).reverse() });
+    if (req.method === 'GET' && url.pathname === '/api/printers') return json(res, 200, { dashboardHeading: dashboardHeading.trim(), capabilities: { localTools: canUseLocalTools(req, port) }, camera: externalCameras.ad5m.view(), cameras: Object.fromEntries(Object.entries(cameras).map(([id, camera]) => [id, camera.view()])), externalCameras: Object.fromEntries(Object.entries(externalCameras).map(([id, camera]) => [id, camera.view()])), cloud: cloud.status, printers: printers(canUseLocalTools(req, port)), laserPrinters: laserPrinters(), checkedAt: new Date().toISOString(), storageError: [storageError, historyStorageError].filter(Boolean).join(' '), history: history.runs.map(timingView).reverse() });
     const cameraMatch = url.pathname.match(/^\/api\/camera\/(ad5m|a5mp|c5|c5p)\/(tapo\/)?image$/);
     if (req.method === 'GET' && cameraMatch) {
       const camera = (cameraMatch[2] ? externalCameras : cameras)[cameraMatch[1]];
@@ -271,6 +285,7 @@ const server = http.createServer(async (req, res) => {
     }
     const match = url.pathname.match(/^\/api\/printers\/(ad5m|a5mp|c5|c5p|mfc_l2710dw|hl_l3270cdw)\/settings$/);
     if (match && req.method === 'GET') {
+      if (!canUseLocalTools(req, port)) return json(res, 403, { error: 'Connection settings are available only at localhost on the dashboard Mac.' });
       const settings = config[match[1]] || {};
       return json(res, 200, { host: settings.host || '', serialNumber: settings.serialNumber || '', hasAccessCode: Boolean(settings.checkCode) });
     }
@@ -312,9 +327,9 @@ const server = http.createServer(async (req, res) => {
     return json(res, 400, { error: error.code ? 'Could not save settings on this Mac.' : error.message });
   }
 });
-server.listen(port, '0.0.0.0', () => {
+server.listen(port, security.allowLanReadOnly ? '0.0.0.0' : '127.0.0.1', () => {
   console.log(`Flashforge Health on this Mac: http://localhost:${port}`);
-  for (const address of lanAddresses()) console.log(`Flashforge Health on your LAN: http://${address}:${port}`);
+  if (security.allowLanReadOnly) for (const address of lanAddresses()) console.log(`Flashforge Health on your LAN (read-only): http://${address}:${port}`);
 });
 function stop() { heightMonitor.stop(); for (const camera of [...Object.values(cameras), ...Object.values(externalCameras)]) camera.stop(); cloud.stop(); clearInterval(interval); clearInterval(laserInterval); clearInterval(queueInterval); server.close(); void saveMaintenance().catch(() => {}); void saveHistory().catch(() => {}); }
 process.on('SIGINT', stop);

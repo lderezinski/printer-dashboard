@@ -1,0 +1,4 @@
+{
+  "allowLanReadOnly": false,
+  "allowInsecureMqtt": false
+}

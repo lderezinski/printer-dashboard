@@ -50,6 +50,28 @@ test('monitor subscribes without publishing, ignores retained messages and clear
     fake.emit('close'); assert.equal(monitor.get('c5p'), null); assert.equal(monitor.status.connected, false); assert.equal(stopped, true);
   } finally { monitor.stop(); }
 });
+
+test('cloud uses certificate-verified TLS unless plaintext was explicitly enabled', async () => {
+  for (const allowInsecureMqtt of [undefined, false, true, 'true']) {
+    const calls = [];
+    const fake = new EventEmitter();
+    fake.end = () => {};
+    fake.subscribe = (topics, options, done) => done(null, topics.map(topic => ({ topic, qos: 0 })));
+    const monitor = new CloudMonitor(() => settings, { load: async () => boot(), allowInsecureMqtt,
+      dial: (url, options) => { calls.push({ url, options }); return fake; } });
+    try {
+      monitor.start(); await new Promise(resolve => setImmediate(resolve));
+      const insecure = allowInsecureMqtt === true;
+      assert.equal(calls[0].url, insecure ? 'mqtt://mqtt.voxelshare.com:1883' : 'mqtts://mqtt.voxelshare.com:8883');
+      assert.equal(calls[0].options.rejectUnauthorized, true);
+      fake.emit('connect');
+      assert.equal(monitor.status.insecureTransport, insecure);
+      fake.emit('error', new Error('Connection failed'));
+      assert.equal(calls.length, 1, 'A TLS failure must not dial a plaintext fallback');
+      if (!insecure) assert.match(monitor.status.message, /without falling back/);
+    } finally { monitor.stop(); }
+  }
+});
 test('100-hour nozzle and 200-hour lubrication reminders advance and reset independently', () => {
   const record = createRecord(0);
   const nozzle = setSchedule(record, { id: 'nozzle-bend', name: 'Check for nozzle bend', hours: 100 }, 0);

@@ -24,3 +24,4 @@ select{width:100%;box-sizing:border-box;background:#101419;color:#e7edf5;border:
 .dual-camera-content.single-camera-content{grid-template-columns:minmax(0,1fr)}
 .single-camera-content>.dual-camera-view{border-top:0;padding-top:0}
 .printer-status{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap}.spaghetti-status{font-size:.875rem;white-space:nowrap}.spaghetti-status.ok{color:#91e9bc}.spaghetti-status.warning{color:#ffda8f}.spaghetti-status.error{color:#ffb6bb}.spaghetti-status.unknown{color:#a9b5c4}
+.camera-coverage{font-size:.875rem;color:#a9b5c4}

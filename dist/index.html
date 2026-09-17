@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Local status for your Flashforge 3D printers and Brother laser printers.">
-  <title>3D printer health · Linda’s Office</title>
+  <title>3D printer health</title>
   <link rel="stylesheet" href="/style.css">
   <script type="module" src="/app.js"></script>
 </head>
 <body>
   <main>
-    <header><div><p class="eyebrow">Linda's Office / Printers</p><h1>3D printer health</h1></div><div class="connection"><p id="updated" data-status="connecting">Connecting to dashboard…</p></div></header>
-    <div class="cloud-status"><p id="cloud-state" class="help">Connecting to Flashforge cloud…</p><button id="cloud-reconnect" class="text-button">Reconnect cloud</button></div>
+    <header><div><p id="dashboard-heading" class="eyebrow">Printer dashboard</p><h1>3D printer health</h1></div><div class="connection"><p id="updated" data-status="connecting">Connecting to dashboard…</p></div></header>
+    <div class="cloud-status"><p id="cloud-state" class="help">Connecting to Flashforge cloud…</p><button id="cloud-reconnect" hidden class="text-button">Reconnect cloud</button></div>
     <section class="summary" aria-label="Workshop overview">
       <div><strong id="online">—<small> / 4</small></strong><span>Connected</span></div>
       <div><strong id="printing">—</strong><span>Printing</span></div>
@@ -27,6 +27,7 @@
       <button id="tab-laser" type="button" role="tab" aria-selected="false" aria-controls="panel-laser" tabindex="-1">Laserjets</button>
     </div>
     <p id="connection-error" class="notice" role="alert" hidden></p>
+    <p id="access-note" class="help" hidden>Viewing only. Open this dashboard at localhost on the dashboard Mac to change settings or records.</p>
     <p id="storage-error" class="notice" role="alert" hidden></p>
     <section id="panel-home" role="tabpanel" aria-labelledby="tab-home" tabindex="0">
       <div class="home-heading"><h2>Finishing next</h2><p class="help">Shortest estimated time first. Printers without an active estimate appear below.</p></div>

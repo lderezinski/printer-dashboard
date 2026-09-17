@@ -6,7 +6,7 @@ const addresses = ['192.168.50.10'];
 const request = (host = '192.168.50.10:3000', peer = '192.168.50.20', headers = {}) => ({
   socket: { remoteAddress: peer }, headers: { host, ...headers }
 });
-const check = req => requestAccessError(req, 3000, addresses);
+const check = req => requestAccessError(req, 3000, addresses, { allowLanReadOnly: true });
 
 test('local tools require both localhost and an actual loopback client', () => {
   assert.equal(canUseLocalTools(request('localhost:3000', '127.0.0.1'), 3000), true);
@@ -43,4 +43,25 @@ test('reject public clients, unrecognized hosts, and other browser origins', () 
     request(undefined, undefined, { origin: 'null' }),
     request(undefined, undefined, { origin: 'http://localhost:3000' }),
     request(undefined, undefined, { 'sec-fetch-site': 'cross-site' })]) assert.ok(check(req));
+});
+
+test('LAN access is disabled by default and local hostname checks still apply', () => {
+  assert.ok(requestAccessError(request(), 3000, addresses));
+  assert.equal(requestAccessError(request('localhost:3000', '127.0.0.1'), 3000, addresses), null);
+  assert.ok(requestAccessError(request('192.168.50.10:3000', '127.0.0.1'), 3000, addresses));
+});
+
+test('LAN opt-in permits viewing but never modifying dashboard state', () => {
+  for (const method of ['PUT', 'POST', 'PATCH', 'DELETE']) {
+    assert.ok(check({ ...request(), method }));
+    assert.ok(check({ ...request('localhost:3000'), method }));
+    assert.ok(check({ ...request('127.0.0.1:3000', '127.0.0.1'), method }));
+    assert.equal(check({ ...request('localhost:3000', '127.0.0.1'), method }), null);
+  }
+});
+
+test('proxy headers cannot turn forwarded requests into trusted local requests', () => {
+  for (const key of ['forwarded', 'x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto', 'x-real-ip']) {
+    assert.ok(check(request('localhost:3000', '127.0.0.1', { [key]: '127.0.0.1' })));
+  }
 });

@@ -10,7 +10,7 @@ export const CLOUD_FRESH_MS = 15000;
 export function validateBootstrap(data) {
   if (!data || data.error) throw new Error(data?.error || 'Invalid cloud response.');
   // The verified provider currently advertises the ordinary MQTT endpoint.
-  if (!['mqtt.voxelshare.com', 'mqtt://mqtt.voxelshare.com', 'mqtt://mqtt.voxelshare.com:1883'].includes(data.server)) throw new Error('Cloud broker changed; connection needs updating.');
+  if (!['mqtt.voxelshare.com', 'mqtt://mqtt.voxelshare.com', 'mqtt://mqtt.voxelshare.com:1883', 'mqtts://mqtt.voxelshare.com:8883'].includes(data.server)) throw new Error('Cloud broker changed; connection needs updating.');
   for (const key of ['username', 'password', 'clientId']) if (typeof data[key] !== 'string' || !data[key] || data[key].length > 8192) throw new Error('Invalid cloud credentials.');
   if (!Array.isArray(data.devices) || data.devices.length > 100) throw new Error('Invalid cloud device list.');
   const topic = v => typeof v === 'string' && v.length > 0 && v.length < 512 && !/[+#\0]/.test(v);
@@ -59,8 +59,9 @@ function bootstrap() {
 }
 
 export class CloudMonitor {
-  constructor(getSettings, { load = bootstrap, dial = connect } = {}) {
+  constructor(getSettings, { load = bootstrap, dial = connect, allowInsecureMqtt = false } = {}) {
     this.getSettings = getSettings; this.load = load; this.dial = dial;
+    this.allowInsecureMqtt = allowInsecureMqtt === true;
     this.samples = new Map(); this.client = null; this.generation = 0; this.timer = null; this.stopped = true;
     this.status = { connected: false, message: 'Connecting through Flash Studio’s saved session…' };
   }
@@ -79,14 +80,15 @@ export class CloudMonitor {
     try {
       const data = await this.load();
       if (!current()) return;
-      const client = this.dial('mqtt://mqtt.voxelshare.com:1883', { clientId: data.clientId, username: data.username, password: data.password,
+      // Never downgrade a failed TLS connection automatically or disable certificate checks.
+      const client = this.dial(this.allowInsecureMqtt ? 'mqtt://mqtt.voxelshare.com:1883' : 'mqtts://mqtt.voxelshare.com:8883', { rejectUnauthorized: true, clientId: data.clientId, username: data.username, password: data.password,
         clean: true, keepalive: 30, connectTimeout: 12000, reconnectPeriod: 0, resubscribe: false, protocolVersion: 4 });
       this.client = client;
       let failed = false;
       const retry = () => {
         if (!current() || failed) return;
         failed = true; this.generation++; client.end(true); this.client = null; this.samples.clear();
-        this.status = { connected: false, message: 'Cloud status disconnected. Retrying shortly; sign in to Flash Studio again if this persists.' };
+        this.status = { connected: false, message: this.allowInsecureMqtt ? 'Cloud status disconnected. Retrying shortly; sign in to Flash Studio again if this persists.' : 'TLS cloud connection unavailable. Retrying without falling back to unencrypted MQTT. Check the cloud connection instructions in README.md.' };
         clearTimeout(this.timer); this.timer = setTimeout(() => this.open(), 15000); this.timer.unref();
       };
       client.on('error', retry); client.on('close', retry);
@@ -96,7 +98,7 @@ export class CloudMonitor {
         client.subscribe(topics, { qos: 0 }, (error, granted) => {
           if (!current()) return;
           if (error || !granted?.length || granted.some(g => g.qos === 128)) return retry();
-          this.status = { connected: true, message: 'Cloud connected · Waiting for fresh printer reports where needed.' };
+          this.status = { connected: true, insecureTransport: this.allowInsecureMqtt, message: this.allowInsecureMqtt ? 'Cloud connected over unencrypted MQTT (enabled in local security settings).' : 'Cloud connected · Waiting for fresh printer reports where needed.' };
           // Renew broker credentials using Flash Studio's current session. Never rotate its refresh token.
           this.timer = setTimeout(() => this.reconnect(), 30 * 60 * 1000); this.timer.unref();
         });

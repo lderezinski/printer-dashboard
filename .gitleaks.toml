@@ -1,0 +1,22 @@
+title = "Printer dashboard secret detection"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "printer-credential-literal"
+description = "Printer/camera access codes and account credentials"
+regex = '''(?i)["']?(?:password|passwd|checkCode|access_token|refresh_token|api_key)["']?\s*[:=]\s*["']([^"'\r\n]{4,})["']'''
+secretGroup = 1
+
+[[rules.allowlists]]
+description = "Explicit example value only"
+regexTarget = "secret"
+regexes = ['''^replace-with-camera-password$''']
+
+[[rules.allowlists]]
+description = "Known dummy credentials only inside tests"
+condition = "AND"
+paths = ['''(^|/)test/''']
+regexTarget = "secret"
+regexes = ['''^(?:fixture-password|must-not-escape|test-code|secret|abcd)$''']

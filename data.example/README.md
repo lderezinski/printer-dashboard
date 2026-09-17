@@ -4,6 +4,11 @@ These files document the JSON formats used in `data/`. All addresses,
 credentials, identifiers, job names, and timestamps are placeholders.
 
 - Copy `printers.json` to `data/printers.json` and replace its values.
+- Optional `dashboard.json` sets the plain-text heading above **3D printer
+  health**. Copy it to `data/dashboard.json`, edit `heading`, and restart.
+- Optional `security.json` documents the explicit LAN-viewing and unencrypted
+  MQTT opt-ins. Copy it to `data/security.json` only when configuring these
+  options; both default to false. See `../SECURITY.md` for the tradeoffs.
 - Copy a `camera-PRINTER_ID.json` file only when that printer has an optional
   Tapo C120 camera. The integrated Flashforge cameras use `printers.json`.
 - `history.json` and `maintenance.json` are normally created and updated by

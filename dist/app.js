@@ -71,15 +71,16 @@ function spaghettiStatus(p, cameras = latestCameras, externalCameras = latestExt
     const current = ['clear', 'suspect', 'warning'].includes(camera.state);
     // Frames resets on a new print or interrupted detection sequence. Do not count older history.
     const history = current ? (camera.history || []).slice(0, Math.min(5, camera.frames || 0)) : [];
-    return { label, checked: history.length, positive: history.filter(h => ['suspect', 'warning'].includes(h.state)).length,
+    return { label, current, checked: history.length, positive: history.filter(h => ['suspect', 'warning'].includes(h.state)).length,
       warning: history.some(h => h.state === 'warning') };
   });
   const best = windows.filter(w => w.checked).sort((a, b) => b.positive - a.positive || Number(b.warning) - Number(a.warning) || b.checked - a.checked)[0];
   const complete = windows.length > 0 && windows.every(w => w.checked === 5);
-  const tone = windows.some(w => w.warning) ? 'error' : best?.positive ? 'warning' : complete ? 'ok' : 'unknown';
+  const tone = windows.some(w => w.warning) ? 'error' : best?.positive ? 'warning' : best ? 'ok' : 'unknown';
   const details = windows.length ? windows.map(w => `${w.label}: ${w.checked ? `${w.positive} positive in ${w.checked} recent checks` : 'waiting for current checks'}`).join('. ') : 'Camera checks unavailable.';
   const title = `Last 5 checks per camera; the higher positive count is shown. Inspect image and Check print now count as positive. ${details}`;
-  return `<span class="spaghetti-status ${tone}" title="${escape(title)}">Spaghetti detected ${best ? best.positive : '—'}/5</span>`;
+  const coverage = best && !complete ? `<span class="camera-coverage">${windows.some(w => !w.current) ? 'Camera check unavailable' : 'Collecting camera checks'}</span>` : '';
+  return `<span class="spaghetti-status ${tone}" title="${escape(title)}">Spaghetti detected ${best ? best.positive : '—'}/5</span>${coverage}`;
 }
 function card(p) {
   const live = p.connected;
@@ -93,7 +94,7 @@ function card(p) {
   const m = p.maintenance;
   const maintenance = `<div class="maintenance-block ${m.due ? 'due' : ''}"><div class="maintenance-heading"><strong>${m.due ? 'Maintenance due' : 'Maintenance'}</strong><button class="text-button" data-maintenance="${p.id}">Add task</button></div>
     ${m.schedules.length ? m.schedules.map(task => `<div class="maintenance-task ${task.due ? 'due' : ''}"><div class="maintenance-heading"><span>${escape(task.name)}${task.due ? ' · Due now' : ''}</span><button class="text-button" data-maintenance="${p.id}" data-task="${escape(task.id)}">Manage</button></div><p class="help">${[task.hours ? `Every ${task.hours} printing hours${task.hoursRemaining !== null ? ` · ${hoursLabel(task.hoursRemaining)} left` : ' · Tracking unavailable'}` : '', task.dueAt ? `Due ${new Date(task.dueAt).toLocaleDateString()}` : ''].filter(Boolean).join(' · ')}</p>${task.initialDueLifetimeHours != null ? `<p class="help">First due at ${task.initialDueLifetimeHours.toLocaleString()} total hours · No prior service recorded</p>` : ''}${task.lastServiced ? `<p class="help">Serviced ${new Date(task.lastServiced).toLocaleDateString()}</p>` : ''}</div>`).join('') : '<p>No reminders set</p>'}
-    ${m.baseline ? `<div class="baseline-total"><strong>${hoursLabel(m.lifetimeHours)} total printing</strong><p class="help">Baseline + printing observed since ${escape(new Date(m.baseline.recordedAt).toLocaleDateString())}</p><details><summary>Machine baseline</summary><dl class="baseline-details"><dt>Printing counter</dt><dd>${hoursLabel(m.baseline.printingSeconds / 3600)}</dd><dt>Material counter</dt><dd>${m.baseline.materialCm.toLocaleString()} cm</dd><dt>Nozzles</dt><dd>${m.baseline.nozzleDiameters.map(n => `${n} mm`).join(' / ')}</dd><dt>Build volume</dt><dd>${m.baseline.buildVolume.join(' × ')} mm</dd><dt>Firmware</dt><dd>${escape(m.baseline.firmwareVersion)}</dd><dt>Serial number</dt><dd>${escape(m.baseline.serialNumber)}</dd></dl></details></div>` : ''}
+    ${m.baseline ? `<div class="baseline-total"><strong>${hoursLabel(m.lifetimeHours)} total printing</strong><p class="help">Baseline + printing observed since ${escape(new Date(m.baseline.recordedAt).toLocaleDateString())}</p><details><summary>Machine baseline</summary><dl class="baseline-details"><dt>Printing counter</dt><dd>${hoursLabel(m.baseline.printingSeconds / 3600)}</dd><dt>Material counter</dt><dd>${m.baseline.materialCm.toLocaleString()} cm</dd><dt>Nozzles</dt><dd>${m.baseline.nozzleDiameters.map(n => `${n} mm`).join(' / ')}</dd><dt>Build volume</dt><dd>${m.baseline.buildVolume.join(' × ')} mm</dd><dt>Firmware</dt><dd>${escape(m.baseline.firmwareVersion)}</dd>${localTools ? `<dt>Serial number</dt><dd>${escape(m.baseline.serialNumber)}</dd>` : ''}</dl></details></div>` : ''}
     <p class="help">${m.hoursAvailable ? `${m.observedHours.toFixed(2)} printing hours observed since ${new Date(m.trackingSince).toLocaleDateString()}` : 'Print hours are not available for this printer yet.'}</p></div>`;
   return `<article class="card"><div class="card-top"><div><h2>${escape(p.name)}</h2><p class="model">${escape(p.model)}</p></div><div class="printer-status"><span class="badge ${p.health}">${escape(p.state)}</span>${spaghettiStatus(p)}</div></div><div class="card-body">${body}${maintenance}</div><div class="card-bottom"><span>${escape(p.host || 'Connection not set')}${p.transport ? ` · ${escape(p.transport)}` : ''}</span><button class="text-button" data-settings="${p.id}">Settings</button></div></article>`;
 }
@@ -184,8 +185,11 @@ async function refresh() {
   refreshing = true;
   try {
     const data = await api('/api/printers');
+    $('#dashboard-heading').textContent = data.dashboardHeading || 'Printer dashboard';
     localTools = location.hostname === 'localhost' && data.capabilities?.localTools === true;
     $('#add-print').hidden = !localTools;
+    $('#cloud-reconnect').hidden = !localTools;
+    $('#access-note').hidden = localTools;
     $('#tab-job').hidden = !localTools;
     $('#gcode-file').disabled = !localTools;
     if (!localTools && !$('#panel-job').hidden) selectView(viewTabs[0]);
@@ -199,13 +203,14 @@ async function refresh() {
     renderHome(printers);
     renderLaserQueues(data.laserPrinters || []);
     const cloudCount = printers.filter(p => p.connected && p.transport?.startsWith('Flashforge cloud')).length;
-    $('#cloud-state').textContent = data.cloud?.connected && cloudCount ? '' : data.cloud?.message || 'Cloud connection unavailable.';
+    $('#cloud-state').textContent = data.cloud?.connected && cloudCount && !data.cloud?.insecureTransport ? '' : data.cloud?.message || 'Cloud connection unavailable.';
     latestHistory = data.history || [];
     renderHistory();
     const focused = document.activeElement?.dataset?.settings;
     const focusedMaintenance = document.activeElement?.dataset?.maintenance;
     $('#printers').innerHTML = printers.map(card).join('');
     $('#laser-printers').innerHTML = data.laserPrinters ? data.laserPrinters.map(laserCard).join('') : '<p class="help">Restart the dashboard service to load laser printer status.</p>';
+    for (const control of document.querySelectorAll('[data-settings], [data-maintenance], [data-timing]')) control.hidden = !localTools;
     if (focused && !dialog.open) document.querySelector(`[data-settings="${focused}"]`)?.focus({ preventScroll: true });
     if (focusedMaintenance && !maintenanceDialog.open) document.querySelector(`[data-maintenance="${focusedMaintenance}"]`)?.focus({ preventScroll: true });
     $('#online').innerHTML = `${printers.filter(p => p.connected).length}<small> / 4</small>`;
@@ -245,6 +250,7 @@ async function refresh() {
   }
 }
 async function openPrinterSettings(event) {
+  if (!localTools) return;
   const button = event.target.closest('[data-settings]');
   if (!button) return;
   selected = button.dataset.settings;
@@ -281,6 +287,7 @@ form.addEventListener('submit', async event => {
   finally { $('#save').disabled = false; }
 });
 $('#printers').addEventListener('click', event => {
+  if (!localTools) return;
   const button = event.target.closest('[data-maintenance]');
   if (!button) return;
   const printer = latestPrinters.find(p => p.id === button.dataset.maintenance);
@@ -370,6 +377,7 @@ function openTiming(run = null) {
 }
 $('#add-print').addEventListener('click', () => { if (localTools) openTiming(); });
 $('#print-history').addEventListener('click', event => {
+  if (!localTools) return;
   const button = event.target.closest('[data-timing]');
   const run = button && latestHistory.find(r => r.id === button.dataset.timing);
   if (run) openTiming(run);
@@ -397,7 +405,7 @@ $('#timing-file').addEventListener('change', async event => {
 });
 $('#timing-form').addEventListener('submit', async event => {
   event.preventDefault();
-  if (!timingId && !localTools) return;
+  if (!localTools) return;
   $('#timing-save').disabled = true;
   $('#timing-error').textContent = '';
   try {
@@ -435,6 +443,7 @@ $('#gcode-file').addEventListener('change', async event => {
   } catch (error) { if (version === inspectionVersion) $('#job-error').textContent = error.message; }
 });
 $('#cloud-reconnect').addEventListener('click', async () => {
+  if (!localTools) return;
   $('#cloud-reconnect').disabled = true;
   try { await api('/api/cloud/reconnect', { method: 'POST' }); await refresh(); }
   catch (error) { $('#cloud-state').textContent = error.message; }

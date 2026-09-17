@@ -41,11 +41,14 @@ test('missing, disabled and stale cameras do not imply zero detections', () => {
     assert.match(render(c), />Spaghetti detected —\/5</);
   }
   assert.match(render(undefined, camera(Array(5).fill('clear'))), /spaghetti-status ok/);
-  assert.match(render(camera(Array(5).fill('clear')), camera(['warning'], { state: 'unavailable' })), /spaghetti-status unknown/);
+  const partial = render(camera(Array(5).fill('clear')), camera(['warning'], { state: 'unavailable' }));
+  assert.match(partial, /spaghetti-status ok/);
+  assert.match(partial, /Camera check unavailable/);
 });
-test('new detection sequences exclude older history and stay neutral until five checks', () => {
+test('fresh zero detections stay green while incomplete coverage is explained separately', () => {
   const html = render(camera(['clear', 'warning', 'warning', 'warning', 'warning'], { frames: 1 }));
   assert.match(html, />Spaghetti detected 0\/5</);
-  assert.match(html, /spaghetti-status unknown/);
+  assert.match(html, /spaghetti-status ok/);
+  assert.match(html, /Collecting camera checks/);
   assert.match(html, /0 positive in 1 recent checks/);
 });

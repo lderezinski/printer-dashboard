@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
-    "test": "node --test"
+    "test": "node --test",
+    "security:check": "node scripts/security-check.mjs",
+    "security:hooks": "git config --local core.hooksPath .githooks"
   },
   "engines": {
     "node": ">=22"
