@@ -1,5 +1,5 @@
 const el = part => document.getElementById(`height-${part}`);
-const labels = { calibration: 'Mark nozzle & part', watching: 'Watching this layer', tracking: 'No sustained widening', suspect: 'Inspect print', warning: 'Possible air printing', unknown: 'Cannot measure', idle: 'Waiting for printing' };
+const labels = { disabled: 'Disabled', calibration: 'Mark nozzle & part', watching: 'Watching this layer', tracking: 'No sustained widening', suspect: 'Inspect print', warning: 'Possible air printing', unknown: 'Cannot measure', idle: 'Waiting for printing' };
 const px = value => Number.isFinite(value) ? `${value.toFixed(1)} px` : '—';
 let local = false;
 let darkChessReference = false;
@@ -18,7 +18,7 @@ export function renderHeight(value, localTools = false) {
   el('measured').textContent = h.samples ?? '—';
   el('gap').textContent = px(h.deltaPx);
   el('layer').textContent = `Current layer: ${h.layer ?? '—'}${h.completedLayer != null ? ` · Last completed check: layer ${h.completedLayer}` : ''}`;
-  el('uncertainty').textContent = 'Samples about every 3–4 seconds. Alerts require comparable views throughout a completed layer; obscured views remain unknown.';
+  el('uncertainty').textContent = h.state === 'disabled' ? 'Gap sampling and alerts are paused.' : 'Samples about every 3–4 seconds. Alerts require comparable views throughout a completed layer; obscured views remain unknown.';
   el('timestamp').textContent = h.capturedAt ? `Close-up captured ${new Date(h.capturedAt).toLocaleString()}` : 'No image yet.';
   if (h.imageUrl && el('image').getAttribute('src') !== h.imageUrl) el('image').src = h.imageUrl;
   el('image').hidden = !h.imageUrl;

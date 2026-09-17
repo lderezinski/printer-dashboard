@@ -26,14 +26,16 @@ export function nextDetection(previous, result, jobKey) {
 }
 
 export class ObicoMonitor {
-  constructor(root, getSample, getJobKey, printerId = 'ad5m') {
-    if (!['ad5m', 'a5mp', 'c5'].includes(printerId)) throw new Error('Unsupported printer camera');
+  constructor(root, getSample, getJobKey, printerId = 'ad5m', source = 'flashforge-integrated') {
+    if (!['ad5m', 'a5mp', 'c5', 'c5p'].includes(printerId)) throw new Error('Unsupported printer camera');
     this.printerId = printerId;
-    this.name = { ad5m: 'AD5M', a5mp: 'A5MP', c5: 'C5' }[printerId];
+    this.name = { ad5m: 'AD5M', a5mp: 'A5MP', c5: 'C5', c5p: 'C5P' }[printerId];
     this.root = root;
     this.getSample = getSample;
     this.getJobKey = getJobKey;
-    this.enabled = existsSync(path.join(root, 'data', `camera-${printerId}.json`)) && process.env.FLASHFORGE_CAMERA !== 'off';
+    if (!['flashforge-integrated', 'tapo-c120'].includes(source)) throw new Error('Unsupported camera source');
+    this.source = source;
+    this.enabled = existsSync(path.join(root, 'data', source === 'tapo-c120' ? `camera-${printerId}.json` : 'printers.json')) && process.env.FLASHFORGE_CAMERA !== 'off';
     this.nextAt = 0;
     this.sequence = 0;
     this.error = '';
@@ -47,7 +49,7 @@ export class ObicoMonitor {
     this.tick();
   }
   launch() {
-    const worker = spawn(path.join(this.root, 'data', 'obico-venv', 'bin', 'python'), ['-u', path.join(this.root, 'obico-worker.py'), this.printerId], {
+    const worker = spawn(path.join(this.root, 'data', 'obico-venv', 'bin', 'python'), ['-u', path.join(this.root, 'obico-worker.py'), this.printerId, this.source], {
       cwd: this.root, stdio: ['pipe', 'pipe', 'ignore'],
       env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' },
     });
@@ -93,8 +95,16 @@ export class ObicoMonitor {
     const jobKey = this.getJobKey();
     if (!jobKey) return;
     const sample = this.getSample();
-    this.pending = { id: ++this.sequence, jobKey, startedAt: now, sample: { job: sample.job, layer: sample.layer }, heightContext: this.height?.context(sample) };
-    this.worker.stdin.write(JSON.stringify({ type: 'capture', id: this.pending.id, heightContext: this.pending.heightContext }) + '\n');
+    // When enabled, A5MP gap sampling owns its internal stream. Reuse its fresh raw frame
+    // instead of opening a competing stream for spaghetti inference.
+    let referenceFrame;
+    if (this.gap && this.gap.enabled !== false) {
+      const snapshot = this.gap.snapshot;
+      if (!snapshot || snapshot.jobKey !== jobKey || !this.gap.referenceImage || now-snapshot.capturedAt > 12000 || snapshot.capturedAt > now || snapshot.capturedAt <= (this.latest?.capturedAt || 0)) return;
+      referenceFrame = {jpeg:this.gap.referenceImage.toString('base64'), capturedAt:snapshot.capturedAt};
+    }
+    this.pending = { id: ++this.sequence, jobKey, startedAt: now, frameCapturedAt:referenceFrame?.capturedAt, sample: { job: sample.job, layer: sample.layer }, heightContext: this.height?.context(sample) };
+    this.worker.stdin.write(JSON.stringify({ type: 'capture', id: this.pending.id, heightContext: this.pending.heightContext, referenceFrame }) + '\n');
   }
   receive(result) {
     if (result.type === 'ready') {
@@ -110,7 +120,8 @@ export class ObicoMonitor {
     if (result.type === 'error') {
       this.error = result.message; this.previous = null; return;
     }
-    if (result.type !== 'result' || !Number.isFinite(result.capturedAt) || result.capturedAt < pending.startedAt || result.capturedAt > Date.now() || typeof result.jpeg !== 'string' || result.jpeg.length > 4_000_000) throw new Error('Invalid image result');
+    const sharedFrame = Number.isFinite(pending.frameCapturedAt) && result.capturedAt === pending.frameCapturedAt && pending.startedAt-result.capturedAt >= 0 && pending.startedAt-result.capturedAt <= 12000;
+    if (result.type !== 'result' || !Number.isFinite(result.capturedAt) || (result.capturedAt < pending.startedAt && !sharedFrame) || result.capturedAt > Date.now() || typeof result.jpeg !== 'string' || result.jpeg.length > 4_000_000) throw new Error('Invalid image result');
     const detection = nextDetection(this.previous, result, pending.jobKey);
     this.previous = detection;
     this.suspended = false;
@@ -138,8 +149,8 @@ export class ObicoMonitor {
       : sample.rawState === 'printing'
         ? { state: 'unverified', message: 'Filament flow is unverified. Obico cannot reliably detect printing into empty air.' }
         : { state: 'inactive', message: 'Air printing: printer is not reporting an active print.' };
-    return { printerId: this.printerId, enabled: this.enabled, state, message, airPrinting: this.gap?.view(now) || this.height?.view(now) || airPrinting, checking: Boolean(this.pending), intervalSeconds: CAMERA_INTERVAL / 1000,
-      capturedAt: this.latest?.capturedAt || null, imageUrl: this.image ? `/api/camera/${this.printerId}/image?t=${this.latest.capturedAt}` : null,
+    return { printerId: this.printerId, source: this.source, enabled: this.enabled, state, message, airPrinting: this.gap?.view(now) || this.height?.view(now) || airPrinting, checking: Boolean(this.pending), intervalSeconds: CAMERA_INTERVAL / 1000,
+      capturedAt: this.latest?.capturedAt || null, imageUrl: this.image ? `/api/camera/${this.printerId}/${this.source === 'tapo-c120' ? 'tapo/' : ''}image?t=${this.latest.capturedAt}` : null,
       frames: current ? this.latest.frames : 0, inferenceMs: this.latest?.inferenceMs ?? null, history: this.history };
   }
   stop() { this.stopped = true; clearInterval(this.timer); clearTimeout(this.startupTimer); this.worker?.kill(); }

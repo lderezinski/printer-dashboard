@@ -32,13 +32,29 @@ The Node service listens on IPv4 port 3000 and accepts loopback or private-netwo
 
 ## Camera failure detection
 
-The Home tab shows separate **AD5M**, **A5MP**, and **C5 camera checks**, using
-their Tapo C120 feeds and Obico's official open-source ONNX model. Each analyzes
-a new frame about every 20–25 seconds while its own fresh printer status says
-`printing`. The camera addresses are AD5M `192.168.50.111`, A5MP `192.168.50.1011`,
-and C5 `192.168.50.113`. Each has an independent image, result, and job history.
-Results and the latest annotated image are available to the same local/LAN
-clients as the dashboard. Camera credentials never go to the browser.
+The Home tab shows **AD5M**, **A5MP**, **C5**, and **C5P camera checks** using
+the A5MP, C5, and C5P internal Flashforge MJPEG cameras, plus a Tapo C120
+wherever configured. The AD5M has no internal camera installed and uses only
+its C120; no internal-camera tile or capture worker is started for it. The A5MP tile pairs its
+gap check with its spaghetti check: two independently annotated
+views of the same internal camera, side by side on wider screens and stacked
+on phones. Each check keeps its own result, capture time, and history; either
+alert contributes to Need attention.
+
+All spaghetti checks use Obico's official open-source ONNX model. Each
+analyzes a new frame about every 20–25 seconds while its own fresh printer
+status says `printing`. Camera addresses follow the printer hosts in
+`data/printers.json`, using `http://PRINTER_IP:8080/?action=stream`. Internal cameras require no separate camera account. A missing or
+disabled internal camera reports **Unavailable** and retries automatically.
+
+Configured C120 cameras remain active as independent additional views in the same
+printer tile, each with its own detector, image, timestamp, and history. Their
+private accounts are read from ignored `data/camera-PRINTER_ID.json` files
+(`host`, `username`, `password`), using RTSP `stream1`. Without that file, the
+extra view stays hidden. If a configured C120 becomes unavailable, its status
+shows the failure while internal monitoring continues; an unavailable internal
+camera likewise does not stop the C120. Either source can raise Need attention.
+Camera credentials are never sent to the browser.
 
 This is a local integration of Obico's detector, not the Obico phone app or
 cloud service. Images stay on this Mac and its dashboard clients. For each camera, the latest
@@ -73,27 +89,27 @@ data/obico-venv/bin/python -m pip install -r requirements-obico.txt
 python3 setup-obico-model.py
 ```
 
-Create owner-only `data/camera-ad5m.json`, `data/camera-a5mp.json`, and
-`data/camera-c5.json` with `host`, `username`, and `password`
-for the Tapo Camera Account. Use the camera's private IPv4 address; the worker
-reads `stream1` on port 554. Never commit that file. Restart the dashboard after
-changing it. Set `FLASHFORGE_CAMERA=off` to disable camera monitoring, including
-for isolated server tests. See `vendor/obico/README.md` for the upstream commit,
-AGPL license, model provenance, and integration details. Model SHA-256 is
-verified before inference. Each worker uses two CPU inference threads.
+Use the printer's existing camera and network settings. Internal-camera monitoring is not enabled for the AD5M because no
+camera is installed. The dashboard does not install cameras or change
+printer settings. Set `FLASHFORGE_CAMERA=off` to disable all camera monitoring,
+including for isolated server tests. See `vendor/obico/README.md` for the
+upstream commit, AGPL license, model provenance, and integration details. Model
+SHA-256 is verified before inference. Each worker uses two CPU inference threads.
 
-Read-only hardware checks also captured the built-in MJPEG feeds on A5MP, C5,
-and C5P at `http://PRINTER_IP:8080/?action=stream`, with existing printer settings.
-The AD5M's corresponding endpoint was unavailable. A5MP's built-in feed now
-also supplies the separate experimental nozzle-gap check below. C5 and C5P's
-built-in feeds were tested for access only. Obico still uses the three Tapo
-cameras listed above; its no-spaghetti result never establishes extrusion.
+The camera checks detect possible visible spaghetti; they do not confirm
+extrusion or apply the A5MP chess-specific gap rule to other printers. Camera
+failures and stale status remain unavailable, and no printer commands are sent.
 
 ### A5MP experimental head-to-print gap check
 
-Home starts with **Finishing next**. The **A5MP head-to-print gap check** below
-uses the built-in close-up camera.
-An independent worker samples about every 3–4 seconds while fresh printer
+The gap check is disabled by default for now; its code and saved references are
+preserved. Spaghetti detection continues using its own camera captures. To
+enable the gap check again, start with `FLASHFORGE_GAP=on npm start`.
+
+Home starts with **Finishing next**. The **A5MP camera checks** tile below
+uses the built-in close-up camera for both gaps and spaghetti.
+A single capture worker supplies the A5MP internal frames to both checks, avoiding
+competing camera connections. Gap sampling runs about every 3–4 seconds while fresh printer
 status says printing; Obico's slower inference does not delay these checks.
 This replaces the earlier expected-height/millimeter calibration workflow.
 

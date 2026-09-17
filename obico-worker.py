@@ -2,10 +2,10 @@
 import base64
 import hashlib
 import ipaddress
+import subprocess
 import json
 from pathlib import Path
 import signal
-import subprocess
 import sys
 import time
 
@@ -28,26 +28,30 @@ signal.signal(signal.SIGINT, stop)
 
 def main():
     global capture_process
-    import cv2
     import imageio_ffmpeg
     import numpy as np
+    import cv2
     import onnxruntime as ort
     from lib.onnx import OnnxNet
     from lib.meta import Meta
 
     printer_id = sys.argv[1] if len(sys.argv) > 1 else 'ad5m'
-    if printer_id not in ('ad5m', 'a5mp', 'c5'):
+    if printer_id not in ('ad5m', 'a5mp', 'c5', 'c5p'):
         raise ValueError('Unsupported printer camera')
-    config = json.loads((ROOT / 'data' / f'camera-{printer_id}.json').read_text())
-    address = ipaddress.IPv4Address(config['host'])
-    if not address.is_private or address.is_loopback or address.is_link_local:
-        raise ValueError('Camera must use a private LAN IPv4 address')
-    # FFmpeg receives the URL directly as an argument, never through a shell.
-    # Keep camera credentials out of diagnostics and the dashboard API.
-    for key in ('username', 'password'):
-        if not isinstance(config[key], str) or any(c in config[key] for c in '@\r\n/'):
-            raise ValueError('Unsupported camera account characters')
-    url = f"rtsp://{config['username']}:{config['password']}@{address}:554/stream1"
+    source = sys.argv[2] if len(sys.argv) > 2 else 'flashforge-integrated'
+    if source not in ('flashforge-integrated', 'tapo-c120'):
+        raise ValueError('Unsupported camera source')
+    if source == 'tapo-c120':
+        config = json.loads((ROOT / 'data' / f'camera-{printer_id}.json').read_text())
+        address = ipaddress.IPv4Address(config['host'])
+        if not address.is_private or address.is_loopback or address.is_link_local:
+            raise ValueError('Camera must use a private LAN IPv4 address')
+        # FFmpeg receives the URL directly as an argument, never through a shell.
+        # Keep camera credentials out of diagnostics and the dashboard API.
+        for key in ('username', 'password'):
+            if not isinstance(config[key], str) or any(c in config[key] for c in '@\r\n/'):
+                raise ValueError('Unsupported camera account characters')
+        url = f"rtsp://{config['username']}:{config['password']}@{address}:554/stream1"
     model = ROOT / 'data' / 'obico-model' / 'model.onnx'
     expected = '0a6ebd8e30dbf6a450c50f9c0a5406f04ba7eb1c99fd5996e888c78bb383b9aa'
     if hashlib.sha256(model.read_bytes()).hexdigest() != expected:
@@ -60,6 +64,7 @@ def main():
     net.meta = Meta(str(ROOT / 'vendor' / 'obico' / 'model.meta'))
     ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
     from height_capture import HeightCamera
+    from flashforge_camera import capture_flashforge
     height_camera = HeightCamera(ROOT) if printer_id == 'a5mp' else None
     emit({'type': 'ready'})
     for line in sys.stdin:
@@ -68,26 +73,41 @@ def main():
             continue
         height_result = height_camera.capture(request['heightContext']) if height_camera and request.get('heightContext') else {}
         try:
-            capture_process = subprocess.Popen([
-                ffmpeg, '-hide_banner', '-loglevel', 'error', '-rtsp_transport', 'tcp',
-                '-i', url, '-an', '-frames:v', '1', '-vf', 'scale=1280:-2',
-                '-f', 'image2pipe', '-vcodec', 'mjpeg', '-q:v', '3', 'pipe:1',
-            ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            try:
-                frame, errors = capture_process.communicate(timeout=20)
-            except subprocess.TimeoutExpired:
-                capture_process.kill()
-                capture_process.communicate()
-                emit({**height_result, 'type': 'error', 'id': request['id'], 'message': 'Camera timed out. Retrying automatically.'})
-                continue
-            if capture_process.returncode != 0:
-                message = 'Camera rejected its login. Check the camera account.' if b'401' in errors else 'Camera feed unavailable. Retrying automatically.'
-                emit({**height_result, 'type': 'error', 'id': request['id'], 'message': message})
-                continue
-            captured_at = int(time.time() * 1000)
-            img = cv2.imdecode(np.frombuffer(frame, dtype=np.uint8), cv2.IMREAD_COLOR)
-            if img is None:
-                raise ValueError('Invalid image')
+            if source == 'flashforge-integrated':
+                shared = request.get('referenceFrame')
+                if printer_id == 'a5mp' and shared:
+                    frame = base64.b64decode(shared['jpeg'], validate=True)
+                    img = cv2.imdecode(np.frombuffer(frame, dtype=np.uint8), cv2.IMREAD_COLOR)
+                    captured_at = shared['capturedAt']
+                    if img is None:
+                        raise ValueError('Invalid shared camera image')
+                else:
+                    img, _, captured_at = capture_flashforge(ROOT, printer_id)
+            else:
+                capture_process = subprocess.Popen([
+                    ffmpeg, '-hide_banner', '-loglevel', 'error', '-rtsp_transport', 'tcp',
+                    '-i', url, '-an', '-frames:v', '1', '-vf', 'scale=1280:-2',
+                    '-f', 'image2pipe', '-vcodec', 'mjpeg', '-q:v', '3', 'pipe:1',
+                ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                try:
+                    frame, errors = capture_process.communicate(timeout=20)
+                except subprocess.TimeoutExpired:
+                    capture_process.kill()
+                    capture_process.communicate()
+                    emit({**height_result, 'type': 'error', 'id': request['id'], 'message': 'Camera timed out. Retrying automatically.'})
+                    continue
+                if capture_process.returncode != 0:
+                    message = 'Camera rejected its login. Check the camera account.' if b'401' in errors else 'Camera feed unavailable. Retrying automatically.'
+                    emit({**height_result, 'type': 'error', 'id': request['id'], 'message': message})
+                    continue
+                captured_at = int(time.time() * 1000)
+                img = cv2.imdecode(np.frombuffer(frame, dtype=np.uint8), cv2.IMREAD_COLOR)
+                if img is None:
+                    raise ValueError('Invalid image')
+        except Exception:
+            emit({**height_result, 'type': 'error', 'id': request['id'], 'message': 'Internal Flashforge camera unavailable. Check that the camera is installed and enabled. Retrying automatically.' if source == 'flashforge-integrated' else 'C120 camera unavailable. Retrying automatically.'})
+            continue
+        try:
             started = time.monotonic()
             # Obico's server uses 0.08 for proposals and 0.45 for suppression.
             detections = net.detect(net.meta, img, None, thresh=0.08, nms=0.45)

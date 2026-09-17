@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { canAnalyze, nextDetection, ObicoMonitor } from '../obico.mjs';
+import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 
 const now = 1_800_000_000_000;
 const sample = { connected: true, rawState: 'printing', lastSeen: new Date(now).toISOString() };
@@ -60,8 +63,8 @@ test('late inference from a previous job is discarded', () => {
   assert.equal(monitor.image, undefined);
 });
 
-test('three cameras keep their images, state, labels and job histories independent', () => {
-  const monitors = ['ad5m', 'a5mp', 'c5'].map(id => new ObicoMonitor('/nonexistent', () => sample, () => id + '-job', id));
+test('four cameras keep their images, state, labels and job histories independent', () => {
+  const monitors = ['ad5m', 'a5mp', 'c5', 'c5p'].map(id => new ObicoMonitor('/nonexistent', () => sample, () => id + '-job', id));
   for (const monitor of monitors) {
     monitor.enabled = true;
     monitor.latest = nextDetection(null, result(null), monitor.printerId + '-job');
@@ -69,13 +72,73 @@ test('three cameras keep their images, state, labels and job histories independe
     const view = monitor.view(now);
     assert.match(view.imageUrl, new RegExp(`/api/camera/${monitor.printerId}/image`));
     assert.equal(view.printerId, monitor.printerId);
+    assert.equal(view.source, 'flashforge-integrated');
     assert.equal(view.airPrinting.state, 'unverified');
   }
   monitors[1].error = 'Camera disconnected';
   assert.equal(monitors[1].view(now).state, 'unavailable');
   assert.equal(monitors[0].view(now).state, 'clear');
   assert.equal(monitors[2].view(now).state, 'clear');
+  assert.equal(monitors[3].view(now).state, 'clear');
+  assert.equal(monitors[3].view(now).source, 'flashforge-integrated');
   assert.throws(() => new ObicoMonitor('/nonexistent', () => sample, () => 'job', '../data'));
+});
+
+test('all internal cameras enable from printer settings without Tapo accounts', async () => {
+  const root = await mkdtemp(path.join(tmpdir(), 'c5p-camera-'));
+  try {
+    await mkdir(path.join(root, 'data'));
+    await writeFile(path.join(root, 'data', 'printers.json'), JSON.stringify({c5p:{host:'192.168.50.10154'}}));
+    for (const id of ['ad5m', 'a5mp', 'c5', 'c5p']) {
+      const monitor = new ObicoMonitor(root, () => sample, () => id+'-job', id);
+      assert.equal(monitor.enabled, process.env.FLASHFORGE_CAMERA !== 'off');
+      assert.equal(monitor.source, 'flashforge-integrated');
+      const tapo = new ObicoMonitor(root, () => sample, () => id+'-job', id, 'tapo-c120');
+      assert.equal(tapo.enabled, false);
+    }
+    await writeFile(path.join(root, 'data', 'camera-ad5m.json'), '{}');
+    const tapo = new ObicoMonitor(root, () => sample, () => 'job', 'ad5m', 'tapo-c120');
+    assert.equal(tapo.enabled, process.env.FLASHFORGE_CAMERA !== 'off');
+    assert.throws(() => new ObicoMonitor(root, () => sample, () => 'job', 'ad5m', 'unknown'));
+  } finally { await rm(root, {recursive:true, force:true}); }
+});
+
+test('internal and C120 results for the same printer stay independent', () => {
+  const internal = new ObicoMonitor('/nonexistent', () => sample, () => 'job', 'ad5m');
+  const tapo = new ObicoMonitor('/nonexistent', () => sample, () => 'job', 'ad5m', 'tapo-c120');
+  for (const camera of [internal, tapo]) {
+    camera.enabled = true;
+    camera.latest = nextDetection(null, result(null), 'job');
+    camera.image = Buffer.from(camera.source);
+  }
+  assert.match(internal.view(now).imageUrl, /^\/api\/camera\/ad5m\/image\?/);
+  assert.match(tapo.view(now).imageUrl, /^\/api\/camera\/ad5m\/tapo\/image\?/);
+  internal.error = 'Internal camera unavailable';
+  assert.equal(internal.view(now).state, 'unavailable');
+  assert.equal(tapo.view(now).state, 'clear');
+  tapo.latest = nextDetection({jobKey:'job',capturedAt:now-1000,consecutive:2,frames:2}, result(.9), 'job');
+  assert.equal(tapo.view(now).state, 'warning');
+  assert.equal(internal.view(now).state, 'unavailable');
+});
+
+test('A5MP inference shares fresh gap-camera frames and rejects stale or mismatched frames', () => {
+  const at = Date.now(), sent = [];
+  const monitor = new ObicoMonitor('/nonexistent', () => ({...sample,lastSeen:new Date().toISOString()}), () => 'job', 'a5mp');
+  monitor.enabled = true; monitor.ready = true;
+  monitor.worker = {stdin:{write:line=>sent.push(JSON.parse(line))}};
+  monitor.gap = {snapshot:{jobKey:'job',capturedAt:at-2000},referenceImage:Buffer.from('raw-camera')};
+  monitor.tick();
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].referenceFrame.jpeg, Buffer.from('raw-camera').toString('base64'));
+  assert.equal(sent[0].referenceFrame.capturedAt, at-2000);
+  const pending = {...monitor.pending};
+  assert.throws(() => monitor.receive({...result(null,at-3000),type:'result',id:pending.id,jpeg:'aW1n'}));
+  monitor.pending = pending;
+  monitor.receive({...result(null,at-2000),type:'result',id:pending.id,jpeg:'aW1n'});
+  assert.equal(monitor.latest.capturedAt, at-2000);
+  monitor.nextAt = 0; monitor.tick(); assert.equal(sent.length,1);
+  monitor.gap.snapshot = {jobKey:'other-job',capturedAt:at}; monitor.tick(); assert.equal(sent.length,1);
+  monitor.gap.snapshot = {jobKey:'job',capturedAt:at-13000}; monitor.tick(); assert.equal(sent.length,1);
 });
 
 test('air printing remains unverified while printing, inactive while ready, and unknown on stale status', () => {

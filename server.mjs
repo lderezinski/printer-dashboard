@@ -153,15 +153,19 @@ const interval = setInterval(poll, 5000);
 interval.unref();
 void poll();
 
-const cameras = Object.fromEntries(['ad5m', 'a5mp', 'c5'].map(id => [id,
+const cameras = Object.fromEntries(['a5mp', 'c5', 'c5p'].map(id => [id,
   new ObicoMonitor(root, () => samples.get(id), () => history.runs.findLast(r => r.printerId === id && r.status === 'active')?.id || samples.get(id)?.job || null, id),
 ]));
-const heightMonitor = new GapMonitor(root, () => samples.get('a5mp'), cameras.a5mp.getJobKey, cameras.a5mp.enabled);
+const externalCameras = Object.fromEntries(['ad5m', 'a5mp', 'c5', 'c5p'].map(id => [id,
+  new ObicoMonitor(root, () => samples.get(id), () => history.runs.findLast(r => r.printerId === id && r.status === 'active')?.id || samples.get(id)?.job || null, id, 'tapo-c120'),
+]));
+// Keep the experimental gap check available, but opt in explicitly to run it.
+const heightMonitor = new GapMonitor(root, () => samples.get('a5mp'), cameras.a5mp.getJobKey, cameras.a5mp.enabled && process.env.FLASHFORGE_GAP === 'on');
 await heightMonitor.load();
 cameras.a5mp.gap = heightMonitor;
 heightMonitor.start();
 let heightSaving = false;
-for (const camera of Object.values(cameras)) camera.start();
+for (const camera of [...Object.values(cameras), ...Object.values(externalCameras)]) camera.start();
 
 function printers() {
   return MODELS.map(printer => {
@@ -210,11 +214,11 @@ const server = http.createServer(async (req, res) => {
       finally { heightSaving = false; }
       return json(res, 200, { saved: true, height: heightMonitor.view() });
     }
-    if (req.method === 'GET' && url.pathname === '/api/printers') return json(res, 200, { capabilities: { localTools: canUseLocalTools(req, port) }, camera: cameras.ad5m.view(), cameras: Object.fromEntries(Object.entries(cameras).map(([id, camera]) => [id, camera.view()])), cloud: cloud.status, printers: printers(), laserPrinters: laserPrinters(), checkedAt: new Date().toISOString(), storageError: [storageError, historyStorageError].filter(Boolean).join(' '), history: history.runs.map(timingView).reverse() });
-    const cameraMatch = url.pathname.match(/^\/api\/camera\/(ad5m|a5mp|c5)\/image$/);
+    if (req.method === 'GET' && url.pathname === '/api/printers') return json(res, 200, { capabilities: { localTools: canUseLocalTools(req, port) }, camera: externalCameras.ad5m.view(), cameras: Object.fromEntries(Object.entries(cameras).map(([id, camera]) => [id, camera.view()])), externalCameras: Object.fromEntries(Object.entries(externalCameras).map(([id, camera]) => [id, camera.view()])), cloud: cloud.status, printers: printers(), laserPrinters: laserPrinters(), checkedAt: new Date().toISOString(), storageError: [storageError, historyStorageError].filter(Boolean).join(' '), history: history.runs.map(timingView).reverse() });
+    const cameraMatch = url.pathname.match(/^\/api\/camera\/(ad5m|a5mp|c5|c5p)\/(tapo\/)?image$/);
     if (req.method === 'GET' && cameraMatch) {
-      const camera = cameras[cameraMatch[1]];
-      if (!camera.image) return json(res, 404, { error: 'No camera image has been analyzed yet.' });
+      const camera = (cameraMatch[2] ? externalCameras : cameras)[cameraMatch[1]];
+      if (!camera?.image) return json(res, 404, { error: 'No camera image has been analyzed yet.' });
       res.writeHead(200, { ...headers, 'Content-Type': 'image/jpeg' });
       return res.end(camera.image);
     }
@@ -312,6 +316,6 @@ server.listen(port, '0.0.0.0', () => {
   console.log(`Flashforge Health on this Mac: http://localhost:${port}`);
   for (const address of lanAddresses()) console.log(`Flashforge Health on your LAN: http://${address}:${port}`);
 });
-function stop() { heightMonitor.stop(); for (const camera of Object.values(cameras)) camera.stop(); cloud.stop(); clearInterval(interval); clearInterval(laserInterval); clearInterval(queueInterval); server.close(); void saveMaintenance().catch(() => {}); void saveHistory().catch(() => {}); }
+function stop() { heightMonitor.stop(); for (const camera of [...Object.values(cameras), ...Object.values(externalCameras)]) camera.stop(); cloud.stop(); clearInterval(interval); clearInterval(laserInterval); clearInterval(queueInterval); server.close(); void saveMaintenance().catch(() => {}); void saveHistory().catch(() => {}); }
 process.on('SIGINT', stop);
 process.on('SIGTERM', stop);

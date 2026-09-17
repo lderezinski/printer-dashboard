@@ -1,14 +1,12 @@
 """Read-only A5MP built-in camera capture and local height analysis."""
 import base64
-import ipaddress
 import json
 import re
 import time
-import urllib.request
 
 import cv2
-import numpy as np
 from height_tracker import HeightTracker, annotate
+from flashforge_camera import capture_flashforge
 
 
 class HeightCamera:
@@ -21,35 +19,8 @@ class HeightCamera:
         result = {'heightCapturedAt': int(time.time()*1000),
                   'heightMeasurement': {'state': 'unknown', 'reason': 'Built-in camera unavailable. Retrying.'}}
         try:
-            host = json.loads((self.root/'data'/'printers.json').read_text())['a5mp']['host']
-            address = ipaddress.IPv4Address(host)
-            if not address.is_private or address.is_loopback or address.is_link_local:
-                return result
-            # Ignore environment HTTP proxies for this private camera.
-            opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-            with opener.open(f'http://{address}:8080/?action=stream', timeout=4) as response:
-                data = b''
-                complete = False
-                deadline = time.monotonic()+6
-                while time.monotonic() < deadline and len(data) < 2_000_000:
-                    chunk = response.read(4096)
-                    if not chunk:
-                        break
-                    data += chunk
-                    start = data.find(b'\xff\xd8')
-                    end = data.find(b'\xff\xd9', start+2)
-                    if start >= 0 and end > start:
-                        data = data[start:end+2]
-                        complete = True
-                        break
-                else:
-                    return result
-                if not complete:
-                    return result
-            img = cv2.imdecode(np.frombuffer(data, dtype=np.uint8), cv2.IMREAD_COLOR)
-            if img is None:
-                return result
-            result.update(heightCapturedAt=int(time.time()*1000), heightWidth=img.shape[1], heightHeight=img.shape[0],
+            img, data, captured_at = capture_flashforge(self.root, 'a5mp')
+            result.update(heightCapturedAt=captured_at, heightWidth=img.shape[1], heightHeight=img.shape[0],
                           heightReferenceJpeg=base64.b64encode(data).decode(), heightJpeg=base64.b64encode(data).decode())
             if not context:
                 result['heightMeasurement'] = {'state': 'unknown', 'reason': 'Set the scale and landmarks to start height checks.'}

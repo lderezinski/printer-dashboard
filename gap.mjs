@@ -148,7 +148,7 @@ export class GapMonitor extends HeightMonitor {
   view(now=Date.now()) {
     const sample=this.getSample(), context=this.context(sample);
     let state='unknown',message='Waiting for fresh A5MP printing status.';
-    if(!this.enabled) message='Camera monitoring is disabled.';
+    if(!this.enabled) {state='disabled';message='Gap check is disabled for now.';}
     else if(canAnalyze(sample,now)) {
       if(!context) {state='calibration';message=sample.job===DARK_CHESS_JOB ? 'Use a healthy close-contact view. Mark the lower light-gray head edge, dark chess piece below it, and fixed frame.' : 'Mark the visible nozzle tip, part edge below it, and fixed frame. No ruler or layer-height settings needed.';}
       else if(this.error) message=this.error;
