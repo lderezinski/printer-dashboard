@@ -39,6 +39,8 @@ const time = seconds => seconds === null || seconds === undefined ? '—' : seco
 let selected = null;
 let refreshing = false;
 let latestPrinters = [];
+let latestCameras = {};
+let latestExternalCameras = {};
 let maintenanceId = null;
 let maintenanceTaskId = null;
 let latestHistory = [];
@@ -59,6 +61,26 @@ async function api(url, options = {}) {
 function temperature(label, value) {
   return `<div class="temp"><dt>${escape(label)}</dt><dd>${temp(value?.current)} <span class="target">/ ${temp(value?.target)}°</span></dd></div>`;
 }
+function spaghettiStatus(p, cameras = latestCameras, externalCameras = latestExternalCameras) {
+  if (!p.connected || p.rawState !== 'printing') return '';
+  const sources = [
+    { camera: cameras[p.id], label: 'Integrated camera' },
+    { camera: externalCameras[p.id], label: 'Tapo C120' },
+  ].filter(({ camera }) => camera?.enabled);
+  const windows = sources.map(({ camera, label }) => {
+    const current = ['clear', 'suspect', 'warning'].includes(camera.state);
+    // Frames resets on a new print or interrupted detection sequence. Do not count older history.
+    const history = current ? (camera.history || []).slice(0, Math.min(5, camera.frames || 0)) : [];
+    return { label, checked: history.length, positive: history.filter(h => ['suspect', 'warning'].includes(h.state)).length,
+      warning: history.some(h => h.state === 'warning') };
+  });
+  const best = windows.filter(w => w.checked).sort((a, b) => b.positive - a.positive || Number(b.warning) - Number(a.warning) || b.checked - a.checked)[0];
+  const complete = windows.length > 0 && windows.every(w => w.checked === 5);
+  const tone = windows.some(w => w.warning) ? 'error' : best?.positive ? 'warning' : complete ? 'ok' : 'unknown';
+  const details = windows.length ? windows.map(w => `${w.label}: ${w.checked ? `${w.positive} positive in ${w.checked} recent checks` : 'waiting for current checks'}`).join('. ') : 'Camera checks unavailable.';
+  const title = `Last 5 checks per camera; the higher positive count is shown. Inspect image and Check print now count as positive. ${details}`;
+  return `<span class="spaghetti-status ${tone}" title="${escape(title)}">Spaghetti detected ${best ? best.positive : '—'}/5</span>`;
+}
 function card(p) {
   const live = p.connected;
   const body = live ? `${p.error || p.rawState === 'error' ? `<p class="printer-error">${p.error ? `Printer error: ${escape(p.error)}` : 'Printer reports an error.'} · Check the printer screen.</p>` : ''}
@@ -73,7 +95,7 @@ function card(p) {
     ${m.schedules.length ? m.schedules.map(task => `<div class="maintenance-task ${task.due ? 'due' : ''}"><div class="maintenance-heading"><span>${escape(task.name)}${task.due ? ' · Due now' : ''}</span><button class="text-button" data-maintenance="${p.id}" data-task="${escape(task.id)}">Manage</button></div><p class="help">${[task.hours ? `Every ${task.hours} printing hours${task.hoursRemaining !== null ? ` · ${hoursLabel(task.hoursRemaining)} left` : ' · Tracking unavailable'}` : '', task.dueAt ? `Due ${new Date(task.dueAt).toLocaleDateString()}` : ''].filter(Boolean).join(' · ')}</p>${task.initialDueLifetimeHours != null ? `<p class="help">First due at ${task.initialDueLifetimeHours.toLocaleString()} total hours · No prior service recorded</p>` : ''}${task.lastServiced ? `<p class="help">Serviced ${new Date(task.lastServiced).toLocaleDateString()}</p>` : ''}</div>`).join('') : '<p>No reminders set</p>'}
     ${m.baseline ? `<div class="baseline-total"><strong>${hoursLabel(m.lifetimeHours)} total printing</strong><p class="help">Baseline + printing observed since ${escape(new Date(m.baseline.recordedAt).toLocaleDateString())}</p><details><summary>Machine baseline</summary><dl class="baseline-details"><dt>Printing counter</dt><dd>${hoursLabel(m.baseline.printingSeconds / 3600)}</dd><dt>Material counter</dt><dd>${m.baseline.materialCm.toLocaleString()} cm</dd><dt>Nozzles</dt><dd>${m.baseline.nozzleDiameters.map(n => `${n} mm`).join(' / ')}</dd><dt>Build volume</dt><dd>${m.baseline.buildVolume.join(' × ')} mm</dd><dt>Firmware</dt><dd>${escape(m.baseline.firmwareVersion)}</dd><dt>Serial number</dt><dd>${escape(m.baseline.serialNumber)}</dd></dl></details></div>` : ''}
     <p class="help">${m.hoursAvailable ? `${m.observedHours.toFixed(2)} printing hours observed since ${new Date(m.trackingSince).toLocaleDateString()}` : 'Print hours are not available for this printer yet.'}</p></div>`;
-  return `<article class="card"><div class="card-top"><div><h2>${escape(p.name)}</h2><p class="model">${escape(p.model)}</p></div><span class="badge ${p.health}">${escape(p.state)}</span></div><div class="card-body">${body}${maintenance}</div><div class="card-bottom"><span>${escape(p.host || 'Connection not set')}${p.transport ? ` · ${escape(p.transport)}` : ''}</span><button class="text-button" data-settings="${p.id}">Settings</button></div></article>`;
+  return `<article class="card"><div class="card-top"><div><h2>${escape(p.name)}</h2><p class="model">${escape(p.model)}</p></div><div class="printer-status"><span class="badge ${p.health}">${escape(p.state)}</span>${spaghettiStatus(p)}</div></div><div class="card-body">${body}${maintenance}</div><div class="card-bottom"><span>${escape(p.host || 'Connection not set')}${p.transport ? ` · ${escape(p.transport)}` : ''}</span><button class="text-button" data-settings="${p.id}">Settings</button></div></article>`;
 }
 function renderHome(printers) {
   const hasEstimate = p => p.connected && p.rawState === 'printing' && Number.isFinite(p.remaining) && p.remaining >= 0;
@@ -91,7 +113,7 @@ function renderHome(printers) {
     const due = p.maintenance.schedules.filter(task => task.due);
     const finish = timed && Number.isFinite(Date.parse(p.lastSeen)) ? new Date(Date.parse(p.lastSeen) + p.remaining * 1000).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' }) : null;
     return `<li class="completion-row"><span class="completion-rank" aria-label="${timed ? `Completion order ${index + 1}` : 'No completion estimate'}">${timed ? index + 1 : '—'}</span>
-      <div class="completion-printer"><h3>${escape(p.name)}</h3><p>${escape(p.connected ? p.state : 'Unavailable')}</p>${p.connected && p.job ? `<p class="completion-job">${escape(p.job)}</p>` : ''}</div>
+      <div class="completion-printer"><h3>${escape(p.name)}</h3><p class="printer-status"><span>${escape(p.connected ? p.state : 'Unavailable')}</span>${spaghettiStatus(p)}</p>${p.connected && p.job ? `<p class="completion-job">${escape(p.job)}</p>` : ''}</div>
       <div class="completion-time"><span class="help">${timed ? 'Estimated remaining' : 'Completion estimate'}</span><strong>${timed ? time(p.remaining) : p.connected && p.rawState === 'ready' ? 'No active print' : 'Not available'}</strong>${finish ? `<p>Finish around ${escape(finish)}</p>` : ''}</div>
       <div class="completion-maintenance ${due.length ? 'due' : ''}"><strong>${due.length ? 'Maintenance due' : 'Maintenance'}</strong>${due.length ? `<ul>${due.map(task => `<li>${escape(task.name)}</li>`).join('')}</ul>` : `<p>${p.maintenance.schedules.length ? 'No tasks due' : 'No reminders set'}</p>`}</div></li>`;
   }).join('');
@@ -169,6 +191,8 @@ async function refresh() {
     if (!localTools && !$('#panel-job').hidden) selectView(viewTabs[0]);
     const printers = data.printers;
     latestPrinters = printers;
+    latestCameras = data.cameras || {};
+    latestExternalCameras = data.externalCameras || {};
     for (const id of internalCameraIds) renderCamera(data.cameras?.[id], id);
     for (const id of cameraIds) renderCamera(data.externalCameras?.[id], id, 'tapo');
     renderHeight(data.cameras?.a5mp?.airPrinting, localTools);
@@ -194,6 +218,11 @@ async function refresh() {
     $('#storage-error').textContent = data.storageError || '';
     $('#storage-error').hidden = !data.storageError;
   } catch {
+    for (const indicator of document.querySelectorAll('.spaghetti-status')) {
+      indicator.textContent = 'Spaghetti detected —/5';
+      indicator.className = 'spaghetti-status unknown';
+      indicator.title = 'Dashboard disconnected. Waiting for current camera checks.';
+    }
     renderHeight(null, false);
     for (const [id, source] of cameraViews) {
       const element = part => cameraElement(id, part, source);

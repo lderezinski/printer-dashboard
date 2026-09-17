@@ -34,27 +34,21 @@
       <ol id="completion-order" class="completion-order" aria-label="Printers by estimated completion"><li>Loading your printers…</li></ol>
       <nav class="camera-links" aria-label="Camera checks"><a href="#camera-a5mp-heading">A5MP cameras</a><a href="#camera-heading">AD5M camera</a><a href="#camera-c5-heading">C5 cameras</a><a href="#camera-c5p-heading">C5P cameras</a></nav>
       <section class="camera-monitor" aria-labelledby="camera-a5mp-heading">
-        <div class="camera-heading"><div><h2 id="camera-a5mp-heading">A5MP camera checks</h2><p class="help">Internal Flashforge camera · Spaghetti check</p></div></div>
-        <div class="dual-camera-content single-camera-content">
-          <!-- Gap-check UI is retained for later use. -->
-          <section class="dual-camera-view" aria-labelledby="height-heading" hidden>
-            <div class="camera-heading"><h3 id="height-heading">Integrated camera · Gap check</h3><span id="height-badge" class="badge unknown">Connecting</span></div>
-            <figure><div class="dual-camera-frame"><img id="height-image" alt="A5MP integrated camera; markers show the head and print edge when measurable" width="640" height="480" hidden><p id="height-placeholder" class="help">Waiting for a close-up while printing…</p></div><figcaption id="height-timestamp" class="help">No image yet.</figcaption></figure>
-            <p id="height-message" aria-live="polite">Connecting…</p>
-            <button id="height-calibrate" type="button" disabled>Mark nozzle &amp; part</button><p id="height-local" class="help">Mark the reference on this Mac at localhost:3000.</p>
-            <details class="camera-check-details"><summary>Gap measurements and recent checks</summary>
-              <dl class="height-metrics"><div><dt>Visible gap</dt><dd id="height-expected">—</dd></div><div><dt>Views this layer</dt><dd id="height-measured">—</dd></div><div><dt>Last layer change</dt><dd id="height-gap">—</dd></div></dl><p id="height-layer" class="help"></p><p id="height-uncertainty" class="help"></p><p id="height-rule" class="help">Watches for a persistent gap between the print head and the print.</p><p class="help">Experimental: verify that the markers follow the head and print surface. Hidden or ambiguous edges cannot be measured.</p><ol id="height-history" class="camera-history" aria-label="Recent nozzle-gap checks"></ol>
-            </details>
-          </section>
-          <section class="dual-camera-view" aria-labelledby="camera-a5mp-spaghetti-heading">
-            <div class="camera-heading"><h3 id="camera-a5mp-spaghetti-heading">Integrated camera · Spaghetti check</h3><span id="camera-a5mp-badge" class="badge unknown">Connecting</span></div>
-            <figure><div class="dual-camera-frame"><img id="camera-a5mp-image" alt="A5MP integrated camera; boxes mark possible spaghetti" width="640" height="480" hidden><p id="camera-a5mp-placeholder" class="help">Waiting for the first image…</p></div><figcaption id="camera-a5mp-timestamp" class="help">No image analyzed yet.</figcaption></figure>
-            <p id="camera-a5mp-message" aria-live="polite">Connecting to the local detector…</p><p id="camera-a5mp-detail" class="help">Checks while the A5MP is printing.</p>
-            <p class="help">Looks for visible spaghetti in the internal camera view. A clear result does not confirm filament flow.</p>
-            <details class="camera-check-details"><summary>Recent spaghetti checks</summary><ol id="camera-a5mp-history" class="camera-history" aria-label="Recent A5MP spaghetti checks"></ol></details>
-          </section>
+        <div class="camera-heading"><div><h2 id="camera-a5mp-heading">A5MP camera check</h2><p class="help">Flashforge integrated camera · Local spaghetti detection</p></div><span id="camera-a5mp-badge" class="badge unknown">Connecting</span></div>
+        <div class="camera-content">
+          <figure><img id="camera-a5mp-image" alt="A5MP integrated camera; boxes mark possible spaghetti" width="640" height="480" hidden><p id="camera-a5mp-placeholder" class="help">Waiting for the first image…</p><figcaption id="camera-a5mp-timestamp" class="help">No image analyzed yet.</figcaption></figure>
+          <div><p id="camera-a5mp-message" aria-live="polite">Connecting to the local detector…</p><p id="camera-a5mp-detail" class="help">Checks while the A5MP is printing.</p><p id="camera-a5mp-air" class="help">Filament flow has not been checked.</p><p class="help">Looks for visible spaghetti. A clear result does not confirm filament is flowing. Inspect the print if you suspect a clog.</p><p class="help">Alerts appear here; the printer will keep running.</p><ol id="camera-a5mp-history" class="camera-history" aria-label="Recent A5MP spaghetti checks"></ol></div>
         </div>
-        <p class="help dual-camera-note">The camera view shows the capture time and annotations for its latest check. Inspect any alert; the printer keeps running.</p>
+        <!-- Gap-check UI is retained for later use. -->
+        <section class="dual-camera-view" aria-labelledby="height-heading" hidden>
+          <div class="camera-heading"><h3 id="height-heading">Integrated camera · Gap check</h3><span id="height-badge" class="badge unknown">Connecting</span></div>
+          <figure><div class="dual-camera-frame"><img id="height-image" alt="A5MP integrated camera; markers show the head and print edge when measurable" width="640" height="480" hidden><p id="height-placeholder" class="help">Waiting for a close-up while printing…</p></div><figcaption id="height-timestamp" class="help">No image yet.</figcaption></figure>
+          <p id="height-message" aria-live="polite">Connecting…</p>
+          <button id="height-calibrate" type="button" disabled>Mark nozzle &amp; part</button><p id="height-local" class="help">Mark the reference on this Mac at localhost:3000.</p>
+          <details class="camera-check-details"><summary>Gap measurements and recent checks</summary>
+            <dl class="height-metrics"><div><dt>Visible gap</dt><dd id="height-expected">—</dd></div><div><dt>Views this layer</dt><dd id="height-measured">—</dd></div><div><dt>Last layer change</dt><dd id="height-gap">—</dd></div></dl><p id="height-layer" class="help"></p><p id="height-uncertainty" class="help"></p><p id="height-rule" class="help">Watches for a persistent gap between the print head and the print.</p><p class="help">Experimental: verify that the markers follow the head and print surface. Hidden or ambiguous edges cannot be measured.</p><ol id="height-history" class="camera-history" aria-label="Recent nozzle-gap checks"></ol>
+          </details>
+        </section>
         <section id="camera-a5mp-tapo-tile" class="external-camera" aria-labelledby="camera-a5mp-tapo-heading" hidden>
           <div class="camera-heading"><h3 id="camera-a5mp-tapo-heading">Tapo C120 · Additional spaghetti check</h3><span id="camera-a5mp-tapo-badge" class="badge unknown">Connecting</span></div>
           <div class="camera-content">
