@@ -303,6 +303,48 @@ npm test
 
 Automated tests cover TCP packet fragmentation, job transitions, state/temperature parsing, elapsed-time gaps, due thresholds, service resets, HTTP errors, and address validation. Tests also cover cloud identity matching, token-field exclusion, retained/stale messages, reconnection behavior and independent maintenance resets. Live hardware checks verified all four printers’ changing cloud status and remaining-time estimates with cloud enabled.
 
+## Want to help?
+
+Contributions are welcome: bug fixes, clearer documentation, better tests, and support for other printers. **Other brands and models are absolutely welcome.** This started with the printers in my office; it doesn't have to end there. My floor space, however, does.
+
+I can only test the printers I own. If you're adding another model, I'll need you to test it on your hardware and help with any follow-up questions. Please be clear about what you've actually tested and what is still a best guess. A familiar-looking API response isn't quite the same as a successful print.
+
+### From idea to pull request
+
+1. For a new printer integration or a larger change, [open an issue](https://github.com/lderezinski/printer-dashboard/issues) first so we can talk through the approach. Small fixes can go straight to a pull request.
+2. Fork the repository, clone your fork, and create a branch for your change. Use Node.js 22 or newer and install dependencies with `npm ci --ignore-scripts`.
+3. Keep the change focused. Add or update tests for changed behavior, and update the setup instructions if someone will need to configure something differently. Use sanitized fixtures so automated tests can run without a printer, a cloud account, or your home network.
+4. Run the checks below, then push your branch and open a pull request against `main`. Describe what changed, why, and how you tested it. Screenshots help with dashboard changes.
+
+For a new printer, include the model, firmware version, connection method, and any required setup. Tell me which readings work, what happens when the printer is offline, and what you haven't been able to verify. Include sanitized sample responses where useful, and document limitations instead of filling missing readings with reassuring guesses.
+
+### Before you send it over
+
+Set up the secret scanner and local commit hook once:
+
+```sh
+python3 scripts/install-gitleaks.py
+npm run security:hooks
+```
+
+Then check your changes:
+
+```sh
+npm test
+npm run security:check
+npm audit --omit=dev
+```
+
+If you change the Python camera or tracking code, also run its tests after installing the Python dependencies described in [Camera checks](#camera-checks-is-that-supposed-to-look-like-spaghetti):
+
+```sh
+data/obico-venv/bin/python -B -m unittest discover -s test -p '*_test.py'
+```
+
+Keep passwords, tokens, serial numbers, private addresses, camera images, and personal print history out of commits, issues, and screenshots. Real configuration stays in ignored `data/`; shared examples belong in `data.example/` with private details removed. See [SECURITY.md](SECURITY.md) for the security guidance.
+
+GitHub requires the **`audit`** check in **Security checks** to pass before changes can reach `main`. It runs the JavaScript tests, secret scans, and JavaScript and Python dependency audits. Pull request branches must also be up to date with `main`. Only my GitHub account (`lderezinski`) can push or merge into `main`, and the required checks apply to my changes too. Even the person who made the mess has to pass the tests.
+
 ## API references
 
 These are community-documented interfaces. They're useful references, but they aren't an officially supported developer API:
