@@ -10,8 +10,8 @@ import { createHistory, observeHistory, timingView, setTiming, addManualRun } fr
 import { readFile, mkdir, writeFile, rename } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { MODELS, validateConfig, readPrinter } from './printer.mjs';
-import { readTcpPrinter } from './tcp-printer.mjs';
+import { MODELS, validateConfig } from './printer.mjs';
+import { readRecoveringStatus, freshStatus, unavailableStatus } from './status-recovery.mjs';
 import { LASER_MODELS, readBrotherPrinter } from './brother.mjs';
 import { readPrinterQueue } from './printer-queue.mjs';
 import { createRecord, upgradeRecord, setBaseline, alignInitialReminders, accrue, setSchedule, markServiced, maintenanceStatus } from './maintenance.mjs';
@@ -128,30 +128,18 @@ function saveMaintenance() {
   maintenanceWrites = write;
   return write.then(() => { storageError = ''; }, () => { storageError = 'Maintenance records could not be saved on this Mac.'; throw new Error(storageError); });
 }
-let polling = false;
+const polling = new Set();
 let saving = false;
 let maintenanceSaving = false;
 
 async function poll() {
-  if (polling) return;
-  polling = true;
-  try {
-    await Promise.all(MODELS.map(async printer => {
-      const settings = config[printer.id];
-      if (!settings?.host) return;
+  await Promise.all(MODELS.map(async printer => {
+    const settings = config[printer.id];
+    if (!settings?.host || polling.has(printer.id)) return;
+    polling.add(printer.id);
+    try {
       const previous = samples.get(printer.id);
-      let sample = cloudEnabled ? cloud.get(printer.id) : null;
-      if (!sample) {
-        try {
-          if (printer.tools > 1 && (!settings.serialNumber || !settings.checkCode)) throw new Error(cloud.status.message);
-          const detail = printer.id === 'ad5m' && settings.serialNumber
-            ? await readPrinter(settings, printer).then(d => ({ ...d, transport: 'Local status · Cloud stays enabled' })).catch(() => readTcpPrinter(settings, printer))
-            : await (printer.tools === 1 ? readTcpPrinter(settings, printer) : readPrinter(settings, printer));
-          sample = { ...detail, connected: true, lastSeen: new Date().toISOString(), message: '' };
-        } catch (error) {
-          sample = { connected: false, state: printer.tools > 1 ? 'Waiting for cloud status' : 'Unavailable', health: 'unknown', lastSeen: previous?.lastSeen || null, message: error.message };
-        }
-      }
+      const sample = await readRecoveringStatus(settings, printer, { cloud: cloudEnabled ? cloud : null, previous });
       if (settings === config[printer.id]) {
         samples.set(printer.id, sample);
         if (!sample.connected || sample.lastSeen !== previous?.lastSeen) {
@@ -160,9 +148,9 @@ async function poll() {
           observations.set(printer.id, accrue(maintenance[printer.id], observations.get(printer.id), sample, observedAt));
         }
       }
-    }));
-    await Promise.all([saveMaintenance().catch(() => {}), saveHistory().catch(() => {})]);
-  } finally { polling = false; }
+    } finally { polling.delete(printer.id); }
+  }));
+  await Promise.all([saveMaintenance().catch(() => {}), saveHistory().catch(() => {})]);
 }
 const interval = setInterval(poll, 5000);
 interval.unref();
@@ -186,9 +174,11 @@ function printers(localTools = false) {
   return MODELS.map(printer => {
     const settings = config[printer.id] || {};
     const configured = Boolean(settings.host);
+    const stored = samples.get(printer.id);
+    const sample = stored?.connected && !freshStatus(stored) ? unavailableStatus(stored, 'Waiting for fresh printer status.') : stored;
     return { ...printer, host: settings.host || '', configured,
       maintenance: viewerMaintenance(maintenanceStatus(maintenance[printer.id], cloudEnabled || printer.tools === 1 || Boolean(settings.serialNumber && settings.checkCode)), localTools),
-      ...(configured ? samples.get(printer.id) || { connected: false, state: 'Connecting', health: 'unknown', message: 'Waiting for the first reading.' } : { connected: false, state: 'Not connected', health: 'unknown', message: 'Add this printer’s connection details.' }) };
+      ...(configured ? sample || { connected: false, state: 'Connecting', health: 'unknown', message: 'Waiting for the first reading.' } : { connected: false, state: 'Not connected', health: 'unknown', message: 'Add this printer’s connection details.' }) };
   });
 }
 const headers = {

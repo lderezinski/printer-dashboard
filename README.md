@@ -39,6 +39,106 @@ By default, you can open the dashboard only on this Mac. To view it from a phone
 
 LAN access is **read-only**. Make settings, history, maintenance, and calibration changes at `http://localhost:3000` on this Mac. Cloud reconnection and local tools also require that address. Opening an IP address gives you the read-only view, even on the same Mac.
 
+### Isolated static Home page
+
+The public-view renderer writes **`static-site/index.html`**, a Home
+page with embedded styling and separate WebP camera snapshots in `static-site/images/`. A small clock-only script updates timestamp colors; it makes no network requests.
+There are no API calls, links, tabs, forms, settings, or cloud reconnect controls. The output
+directory contains only generated public files; renderer code stays in `scripts/`.
+
+Public photos use only the A5MP, C5, and C5P integrated cameras, plus the AD5M's
+Tapo C120. Additional C120 views on the other printers are not exported, even if
+an integrated camera is unavailable. Photos are reduced to a maximum width of
+640 pixels (never enlarged), preserve aspect ratio and existing detection markings,
+and use WebP quality 65. Encoding uses the existing OpenCV environment in
+`data/obico-venv`; no image processing is needed on the cloud server.
+
+Image filenames include their content hash. Identical photos keep the same name
+and modification time, so incremental upload tools and browsers can reuse them.
+Photos are written before HTML is replaced atomically. After every export, cleanup
+keeps the two latest images per printer (at most eight total), always preserving
+the image referenced by the current page. Unrelated files are left alone. When syncing to a server,
+transfer images before publishing the new HTML and remove obsolete images only
+afterward. Transfer the whole `static-site/` tree, not just `index.html`.
+
+```sh
+npm run static:render   # Generate one snapshot
+npm run static:watch    # Generate immediately, then every 60 seconds
+npm run static:serve    # Serve the snapshot at http://localhost:8080
+```
+
+Run the watcher and static server in separate terminals while the dashboard is
+running. These are independent processes; restarting the dashboard does not
+require restarting them. These commands do not install a login/startup service.
+For a dashboard using a different local port, set
+`STATIC_DASHBOARD_URL=http://127.0.0.1:3001` on the renderer. `STATIC_PORT` changes
+the static server's port. The source must remain an HTTP loopback address.
+
+The page refreshes every 60 seconds and prominently shows its capture time.
+Each printer and camera has a separate report/capture timestamp. These timestamps
+and the page capture time are green through 70 seconds old, yellow over 70 seconds
+through 5 minutes, and red after 5 minutes. Colors update every second using the
+viewer’s clock, including when viewing an old export. Missing or future timestamps
+are neutral; estimated future finish times are not age-colored. The content security
+policy permits only the exact clock script by its hash and prohibits network calls. Printer readings
+older than 15 seconds and camera checks older than 60 seconds are unavailable at
+export time. The page describes a snapshot, not live status. If the dashboard is
+unreachable, the watcher replaces the page with an unavailable snapshot. If the
+watcher or Mac stops, the timestamp stops advancing; the old file may still be
+served and must not be treated as current.
+
+Exported fields are limited to fixed printer names, reported states, progress,
+remaining/finish estimates, current print filenames (without directory paths),
+maintenance due counts in the overview, enabled camera snapshots and
+detection summaries using all available checks from the current sequence (up to
+12 retained checks). Finishing-next tiles show wrapping print filenames in place
+of maintenance tasks. Laserjet queues and their document filenames are omitted. Directory paths,
+custom headings, IP addresses, serial numbers, access codes, credentials, history,
+maintenance descriptions, and raw error messages are excluded. Camera images
+show the camera's actual view. Generated snapshots are ignored by Git.
+
+The static server binds only to `127.0.0.1`, serves only `/`, `/index.html`, and
+the generated image filenames under `/images/`. It allows only GET/HEAD, disables
+HTML caching, caches immutable images, and has no proxy or dashboard API routes.
+A future public tunnel may target **this static server on port 8080**. Alternatively,
+a static host can serve only the contents of `static-site/`; configure HTML
+responses with `Cache-Control: no-store` to keep minute-by-minute refreshes current.
+Do not point public hosting at the repository, `dist/`, or the private dashboard
+on port 3000. No tunnel or web server installation is performed by these commands.
+
+#### Automatic upload over SSH
+
+To upload after each export, put the destination in ignored, private
+`data/static-site-sync.json` and restart `npm run static:watch`:
+
+```json
+{
+  "enabled": true,
+  "destination": "root@your-server:/var/www/status/"
+}
+```
+
+The watcher exports and syncs every 60 seconds while this Mac is awake and the
+watcher is running. `npm run static:render` also uploads when syncing is enabled.
+The remote directory must exist, and key-based SSH access and its trusted host
+key must already be configured. No keys or credentials are copied into the site.
+Set `enabled` to `false` and restart the watcher to stop uploads.
+
+Transfers use `rsync -avzh -e ssh` with noninteractive SSH, strict host-key checks,
+and timeouts. Each upload stages only the generated HTML and allowed WebP files,
+preserving file timestamps so unchanged images do not transfer again. Images
+upload first, then HTML using rsync's temporary-file-and-rename behavior, then
+obsolete generated images are removed from the remote `images/` directory.
+Other remote files are excluded from cleanup. The remote copy therefore retains
+the same two images per printer as the local export after a successful sync.
+
+Rendering and syncing never overlap within a watcher. If an upload takes longer
+than a minute, the next tick is skipped. Failures retry at the next export; HTML
+is not published if the image upload fails. An unavailable dashboard snapshot is
+still synced so the server does not keep displaying old status as current.
+This does not install a login/startup service. For the background process used
+in this workspace, transfer results are in `data/static-renderer.log`.
+
 There is no dashboard login. Anyone who can reach the LAN listener can see status, camera images, and print history. Do not forward its port or expose it through a public proxy. See [SECURITY.md](SECURITY.md) for the configuration details and checks to run before publishing the repository.
 
 ### Dashboard heading
@@ -63,13 +163,15 @@ Start with **Settings** on each printer card. The four 3D printers have example 
 
 Keep Flashforge cloud enabled. The dashboard uses Flash Studio's saved sign-in session and networking library to get your account's printer list and MQTT connection information. Leave Flash Studio installed in `/Applications/Flash Studio.app`. You can close it after signing in. If the session expires, sign in there again, then click **Reconnect cloud** in the dashboard.
 
-The dashboard matches cloud reports to printers using the account device ID, serial number, model/PID, and configured IP address. If an address changes on your network, update **Settings** on that printer's card. Settings stay in `data/printers.json` with owner-only permissions. A private helper reads account tokens and sends them to the verified Flashforge service. Broker credentials pass to Node through a private pipe. Tokens and raw cloud reports aren't saved in dashboard records or sent to the browser.
+The dashboard matches cloud reports using the account device ID and model/PID, plus the configured serial number when present. Printers with a configured serial remain matched after DHCP changes their IP. Without a configured serial, matching still requires the saved IP address. If an address changes, update **Settings** on that printer's card to restore local fallback access. Settings stay in `data/printers.json` with owner-only permissions. A private helper reads account tokens and sends them to the verified Flashforge service. Broker credentials pass to Node through a private pipe. Tokens and raw cloud reports aren't saved in dashboard records or sent to the browser.
 
 The installed Flash Studio 1.7.18 networking library (3.4.3) is Intel-only; the helper uses the Mac’s system Python under Rosetta. The library handles the two authenticated HTTPS reads. MQTT.js handles the status stream directly because the native status callback did not deliver the current live messages during testing. The dashboard now requires certificate-verified TLS on port 8883 by default and never automatically falls back to plaintext. The provider advertises `mqtt.voxelshare.com` on plain MQTT port 1883; a trusted TLS connection was unavailable during verification. To retain cloud monitoring with this broker, explicitly set `allowInsecureMqtt` to `true` in ignored `data/security.json`, or start with `FLASHFORGE_ALLOW_INSECURE_MQTT=on npm start`. This sends broker credentials and status without transport encryption and displays a persistent warning. Leave this opt-in off when verified TLS is available.
 
-Only fresh `device_action` / `device_status` messages appear in the dashboard. Old retained messages and cached REST details are left out, and measurements expire after 15 seconds without a fresh report. The connection retries after failures and renews broker credentials every 30 minutes from Flash Studio's saved session, without rotating its refresh token or sending a login-sync command. The monitor subscribes to status; it never publishes printer commands.
+Only fresh `device_action` / `device_status` messages appear in the dashboard. Old retained messages and cached REST details are left out, and measurements expire after 15 seconds without a fresh report. The connection retries after failures and renews broker credentials every 30 minutes from Flash Studio's saved session, without rotating its refresh token or sending a login-sync command. The monitor also reconnects automatically after 60 seconds of silence from a previously printing device or from the whole subscribed feed, at most once every three minutes. The monitor subscribes to status; it never publishes printer commands.
 
-Both Adventurers have a local fallback. The AD5M’s authenticated-identity HTTP status read also supplies remaining time with cloud enabled on its current firmware. If unavailable, it falls back to TCP status. The A5MP falls back to TCP, which does not supply remaining time. TCP sends only `M119`, `M27`, `M105`, then `M119` again to detect job transitions. C5/C5P do not have this fallback; they show unavailable when cloud reports stop. Their local HTTP service still requires LAN Only, but the dashboard does not change that setting.
+Both Adventurers have a local fallback, started proactively when a cloud report is more than five seconds old. Each printer polls independently, and reports arriving during a failed local read are rechecked before marking the printer disconnected. Brief losses show **Reconnecting** for up to 70 seconds since the last successful report; live measurements still expire after 15 seconds. Camera capture retries immediately when fresh printing status returns. The camera detection sequence resets across monitoring gaps.
+
+Both Adventurers support local status reads. The AD5M’s authenticated-identity HTTP status read also supplies remaining time with cloud enabled on its current firmware. If unavailable, it falls back to TCP status. The A5MP falls back to TCP, which does not supply remaining time. TCP sends only `M119`, `M27`, `M105`, then `M119` again to detect job transitions. C5/C5P do not have this fallback; they show unavailable when cloud reports stop. Their local HTTP service still requires LAN Only, but the dashboard does not change that setting.
 
 The Node service listens on IPv4 port 3000, using loopback by default and private-network access only when explicitly enabled. Host and origin checks restrict requests to the dashboard's own addresses; forwarded/proxy headers are rejected. All write routes require loopback access through the `localhost` hostname. Credentials and private data files are never served as static assets, and read-only clients cannot retrieve printer settings or baseline serial numbers. Set `FLASHFORGE_CLOUD=off` when running isolated local tests that must not use the account session.
 

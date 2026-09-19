@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
+    "static:render": "node scripts/render-static-site.mjs",
+    "static:watch": "node scripts/render-static-site.mjs --watch",
+    "static:serve": "node scripts/serve-static-site.mjs",
     "test": "node --test",
     "security:check": "node scripts/security-check.mjs",
     "security:hooks": "git config --local core.hooksPath .githooks"
