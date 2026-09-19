@@ -262,7 +262,7 @@ async function openPrinterSettings(event) {
   $('#settings-title').textContent = `${({ ad5m: 'AD5M', a5mp: 'A5MP', c5: 'C5', c5p: 'C5P', mfc_l2710dw: 'MFC-L2710DW', hl_l3270cdw: 'HL-L3270CDW' })[selected]} connection`;
   $('#form-error').textContent = '';
   $('#save').disabled = true;
-  $('#connection-help').textContent = laser ? 'Enter this Brother printer’s LAN IP address. Local monitoring requires SNMP read access with the community name public. No Brother cloud account is needed.' : 'Keep cloud enabled. Cloud status uses your signed-in Flash Studio session on this Mac. The IP address matches each cloud report to its printer. Adventurers also have a local fallback.';
+  $('#connection-help').textContent = laser ? 'Enter this Brother printer’s LAN IP address. Local monitoring requires SNMP read access with the community name public. No Brother cloud account is needed.' : 'Keep cloud enabled. Cloud status uses your signed-in Flash Studio session on this Mac. A saved serial number keeps cloud reports matched when the IP address changes. Keep the IP address current for local status fallback.';
   dialog.showModal();
   try {
     const data = await api(`/api/printers/${printerId}/settings`);

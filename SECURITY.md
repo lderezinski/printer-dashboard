@@ -3,6 +3,17 @@
 This is a local, single-user printer monitor. It has no login and should not be
 published as a public website or placed behind a public reverse proxy.
 
+The separate `static-site/` export is intended for public viewing. It contains
+only a generated Home-page snapshot with allowlisted fields and reduced camera
+images. `scripts/serve-static-site.mjs` serves only that HTML and the explicitly
+allowed WebP image filenames, accepts GET/HEAD,
+and has no route to the dashboard APIs. A public tunnel may target this separate
+static server (loopback port 8080 by default), never the dashboard on port 3000.
+Serve only the generated output directory when using another static host.
+Camera views themselves will be visible to anyone who can reach the public site.
+Keep generated snapshots out of Git; they are covered by `.gitignore` and the
+commit guard. This exception does not change the private dashboard's access rules.
+
 ## Access and private configuration
 
 By default the server binds to `127.0.0.1`. Open `http://localhost:3000` on the

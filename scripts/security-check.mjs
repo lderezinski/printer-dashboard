@@ -12,6 +12,7 @@ const git = args => execFileSync('git', args, { cwd: root, maxBuffer: 32 * 1024 
 const args = staged ? ['diff', '--cached', '--name-only', '--diff-filter=ACMR', '-z'] : ['ls-files', '--cached', '--others', '--exclude-standard', '-z'];
 const files = [...new Set(git(args).toString().split('\0').filter(Boolean))];
 const forbidden = files.filter(file => (file.startsWith('data/') && file !== 'data/printers.example.json')
+  || file.startsWith('static-site/') || /^\.static-site-.*\.tmp$/.test(file)
   || /(^|\/)(?:\.env(?:\..+)?|printers\.json|.*\.(?:pem|key|p12|pfx|log))$/.test(file) && !file.endsWith('.env.example')
   || /^(?:node_modules|\.venv|venv|\.agents|\.codex)\//.test(file));
 if (forbidden.length) {

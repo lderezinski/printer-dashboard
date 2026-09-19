@@ -91,6 +91,9 @@ export class ObicoMonitor {
       this.suspended = true;
       return;
     }
+    // Resume immediately after fresh printer status returns instead of waiting
+    // out a prior capture interval. Preserve the gap in detection continuity.
+    if (this.suspended) { this.nextAt = 0; this.suspended = false; }
     if (this.pending || now < this.nextAt) return;
     if (!this.worker) { this.launch(); return; }
     if (!this.ready) return;

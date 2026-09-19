@@ -30,10 +30,12 @@ export function parseCloudMessage(message, devices, settings, now = Date.now()) 
   if (event?.eventType !== 'device_action' || event?.payload?.action_type !== 'device_status') return null;
   const d = event.payload.data;
   if (!d || typeof d !== 'object' || Array.isArray(d)) return null;
-  // Match both account identity and expected model/IP. Never attach an unrelated spool/printer.
+  // Match account identity and expected model. A configured serial survives DHCP
+  // address changes; installations without a serial still require the saved IP.
   const device = devices.find(v => v.sn === d.sn && v.deviceID === d.deviceID);
   if (!device) return null;
-  const printer = MODELS.find(p => modelNames[p.id] === device.model && pids[p.id] === d.pid && settings[p.id]?.host === d.ipAddress);
+  const printer = MODELS.find(p => modelNames[p.id] === device.model && pids[p.id] === d.pid &&
+    (settings[p.id]?.serialNumber ? settings[p.id].serialNumber === device.sn : settings[p.id]?.host === d.ipAddress));
   if (!printer || devices.filter(v => v.model === device.model).length !== 1 || typeof d.status !== 'string') return null;
   const detail = { status: d.status, errorCode: d.errorCode, printFileName: d.fileName, printProgress: d.progress,
     printLayer: d.printLayer, targetPrintLayer: d.targetLayer, estimatedTime: d.estimateTime,
@@ -66,13 +68,27 @@ export class CloudMonitor {
     this.allowInsecureMqtt = allowInsecureMqtt === true;
     this.samples = new Map(); this.client = null; this.generation = 0; this.timer = null; this.stopped = true;
     this.status = { connected: false, message: 'Connecting through Flash Studio’s saved session…' };
+    this.lastRecoveryAt = 0;
   }
-  start() { this.stopped = false; void this.open(); }
-  stop() { this.stopped = true; this.generation++; clearTimeout(this.timer); this.client?.end(true); this.client = null; this.samples.clear(); }
+  start() {
+    this.stopped = false; void this.open();
+    clearInterval(this.watchdog);
+    this.watchdog = setInterval(() => this.recoverIfSilent(), 5000); this.watchdog.unref();
+  }
+  stop() { this.stopped = true; this.generation++; clearTimeout(this.timer); clearInterval(this.watchdog); this.client?.end(true); this.client = null; this.samples.clear(); }
   reconnect() { this.stop(); this.start(); }
+  recoverIfSilent(now = Date.now()) {
+    if (this.stopped || !this.status.connected || now - this.lastRecoveryAt < 180000) return false;
+    const activeSilent = [...this.samples.values()].some(sample => sample.connected && sample.rawState === 'printing' && now - Date.parse(sample.lastSeen) > 60000);
+    const allSilent = Number.isFinite(this.subscribedAt) && now - Math.max(this.subscribedAt, this.lastMessageAt || 0) > 60000;
+    if (!activeSilent && !allSilent) return false;
+    this.lastRecoveryAt = now;
+    this.reconnect();
+    return true;
+  }
   get(printerId, now = Date.now()) {
     const sample = this.samples.get(printerId);
-    return this.status.connected && sample && now - Date.parse(sample.lastSeen) <= CLOUD_FRESH_MS ? sample : null;
+    return this.status.connected && sample && now >= Date.parse(sample.lastSeen) && now - Date.parse(sample.lastSeen) <= CLOUD_FRESH_MS ? sample : null;
   }
   async open() {
     const generation = ++this.generation;
@@ -101,6 +117,7 @@ export class CloudMonitor {
           if (!current()) return;
           if (error || !granted?.length || granted.some(g => g.qos === 128)) return retry();
           this.status = { connected: true, insecureTransport: this.allowInsecureMqtt, message: this.allowInsecureMqtt ? 'Cloud connected over unencrypted MQTT (enabled in local security settings).' : 'Cloud connected · Waiting for fresh printer reports where needed.' };
+          this.subscribedAt = Date.now(); this.lastMessageAt = 0;
           // Renew broker credentials using Flash Studio's current session. Never rotate its refresh token.
           this.timer = setTimeout(() => this.reconnect(), 30 * 60 * 1000); this.timer.unref();
         });
@@ -108,7 +125,7 @@ export class CloudMonitor {
       client.on('message', (topic, message, packet) => {
         if (!current() || packet?.retain) return;
         const report = parseCloudMessage(message, data.devices, this.getSettings());
-        if (report) this.samples.set(report.printerId, report.sample);
+        if (report) { this.samples.set(report.printerId, report.sample); this.lastMessageAt = Date.now(); }
       });
     } catch (error) {
       if (!current()) return;

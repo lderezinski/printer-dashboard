@@ -20,3 +20,5 @@ venv/
 tmp/
 security-audit-*.md
 gitleaks-report*.json
+static-site/
+.static-site-*.tmp

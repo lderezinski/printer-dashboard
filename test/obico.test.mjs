@@ -65,6 +65,18 @@ test('late inference from a previous job is discarded', () => {
   assert.equal(monitor.image, undefined);
 });
 
+test('camera retries immediately when fresh printer status returns after suspension', () => {
+  const current = { ...sample, lastSeen: new Date().toISOString() };
+  const monitor = new ObicoMonitor('/nonexistent', () => current, () => 'job');
+  let captures = 0;
+  monitor.enabled = true; monitor.ready = true; monitor.suspended = true;
+  monitor.nextAt = Date.now() + 20000;
+  monitor.worker = { stdin: { write: () => { captures++; } } };
+  monitor.tick();
+  assert.equal(captures, 1); assert.equal(monitor.suspended, false);
+  assert.equal(monitor.pending.jobKey, 'job');
+});
+
 test('four cameras keep their images, state, labels and job histories independent', () => {
   const monitors = ['ad5m', 'a5mp', 'c5', 'c5p'].map(id => new ObicoMonitor('/nonexistent', () => sample, () => id + '-job', id));
   for (const monitor of monitors) {

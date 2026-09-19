@@ -27,6 +27,29 @@ test('cloud identity checks reject unknown devices, wrong address/model and ambi
   for (const change of [{ sn: 'other' }, { deviceID: 'other' }, { ipAddress: '192.168.50.103' }, { pid: '0028' }, { status: null }]) assert.equal(parseCloudMessage(message(change), devices, settings), null);
   assert.equal(parseCloudMessage(message(), [...devices, { ...devices[0], sn: 'other' }], settings), null);
 });
+test('configured serial accepts DHCP address changes but never a different printer identity', () => {
+  const identified = { c5p: { ...settings.c5p, serialNumber: 'fixture-serial' } };
+  assert.equal(parseCloudMessage(message({ ipAddress: '192.168.50.200' }), devices, identified).printerId, 'c5p');
+  assert.equal(parseCloudMessage(message(), devices, { c5p: { ...settings.c5p, serialNumber: 'another-serial' } }), null);
+  assert.equal(parseCloudMessage(message({ sn: 'other' }), devices, identified), null);
+});
+
+test('silent printing or silent subscriptions trigger rate-limited automatic cloud recovery', () => {
+  const monitor = new CloudMonitor(() => settings);
+  let reconnects = 0;
+  monitor.reconnect = () => { reconnects++; };
+  monitor.stopped = false; monitor.status.connected = true;
+  const now = 1_800_000_000_000;
+  monitor.subscribedAt = now - 10000; monitor.lastMessageAt = now;
+  monitor.samples.set('c5p', { connected: true, rawState: 'printing', lastSeen: new Date(now - 60001).toISOString() });
+  assert.equal(monitor.recoverIfSilent(now), true); assert.equal(reconnects, 1);
+  assert.equal(monitor.recoverIfSilent(now + 60000), false);
+  assert.equal(monitor.recoverIfSilent(now + 180000), true); assert.equal(reconnects, 2);
+  monitor.lastRecoveryAt = 0; monitor.samples.clear(); monitor.subscribedAt = now - 60001; monitor.lastMessageAt = 0;
+  assert.equal(monitor.recoverIfSilent(now), true);
+  monitor.lastRecoveryAt = 0; monitor.subscribedAt = now; assert.equal(monitor.recoverIfSilent(now), false);
+  monitor.stop();
+});
 test('cached REST details, commands, malformed or oversized messages cannot become live status', () => {
   for (const value of ['{', JSON.stringify({ detail: data }), JSON.stringify({ cmd: 'deviceUpdateDetail_cmd', args: {} }), ' '.repeat(262145)]) assert.equal(parseCloudMessage(value, devices, settings), null);
   assert.equal(parseCloudMessage(message({ status: 'pause' }), devices, settings).sample.remaining, null);

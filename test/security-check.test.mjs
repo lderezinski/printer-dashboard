@@ -43,5 +43,12 @@ test('commit guard scans the index, redacts findings, and rejects private files 
       const privateFile = run();
       assert.notEqual(privateFile.status, 0);
       assert.match(privateFile.stderr, /Private files must not be committed/);
+      git('reset', '--', 'data/camera.json');
+      mkdirSync(path.join(root, 'static-site'));
+      writeFileSync(path.join(root, 'static-site', 'index.html'), '<!doctype html><title>Live camera snapshot</title>');
+      git('add', '--force', 'static-site/index.html');
+      const snapshot = run();
+      assert.notEqual(snapshot.status, 0);
+      assert.match(snapshot.stderr, /static-site\/index.html/);
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
