@@ -19,6 +19,7 @@ export function normalize(detail, printer) {
   const errorCode = String(detail.errorCode ?? '').trim();
   const error = errorCode && !/^0+$/.test(errorCode) ? errorCode : null;
   const progress = number(detail.printProgress);
+  const slotInfos = Array.isArray(detail.matlStationInfo?.slotInfos) ? detail.matlStationInfo.slotInfos : [];
   const active = ['printing', 'pause', 'paused', 'heating', 'pausing', 'error', 'completed'].includes(rawState);
   return {
     state: labels[rawState] || `Unknown (${rawState})`, rawState,
@@ -31,6 +32,13 @@ export function normalize(detail, printer) {
     nozzles: Array.from({ length: printer.tools }, (_, i) => ({
       current: number(printer.tools === 1 ? detail.rightTemp : detail.nozzleTemps?.[i]),
       target: number(printer.tools === 1 ? detail.rightTargetTemp : detail.nozzleTargetTemps?.[i]),
+      ...(() => {
+        const slots = slotInfos.filter(slot => slot?.slotId === i + 1);
+        const slot = slots.length === 1 ? slots[0] : null;
+        if (!slot) return {};
+        return { material: typeof slot?.materialName === 'string' && slot.materialName.trim().length <= 100 ? slot.materialName.trim() || null : null,
+          hasFilament: typeof slot?.hasFilament === 'boolean' ? slot.hasFilament : null };
+      })(),
     })),
     bed: { current: number(detail.platTemp), target: number(detail.platTargetTemp) },
     chamber: printer.id === 'c5p' ? { current: number(detail.chamberTemp), target: number(detail.chamberTargetTemp) } : null,

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, writeFile, readdir, readFile, stat, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, readdir, readFile, stat, chmod, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
 import { syncStaticSite, validateSyncDestination } from '../scripts/sync-static-site.mjs';
@@ -14,6 +14,9 @@ async function fixture() {
   const name = `ad5m-tapo-${'a'.repeat(64)}.webp`;
   await writeFile(path.join(root, 'index.html'), `<img src="images/${name}">`);
   await writeFile(path.join(root, 'images', name), 'fixture-image');
+  await chmod(path.join(root, 'images'), 0o700);
+  await chmod(path.join(root, 'images', name), 0o600);
+  await chmod(path.join(root, 'index.html'), 0o600);
   await writeFile(path.join(root, 'images', 'private.txt'), 'DO NOT UPLOAD');
   await writeFile(path.join(root, 'private.json'), 'DO NOT UPLOAD');
   return { root, name };
@@ -29,6 +32,9 @@ test('sync stages only public files, keeps mtimes and uploads images before HTML
         staging = path.dirname(args.at(-2).replace(/\/$/, ''));
         assert.deepEqual((await readdir(staging)).sort(), ['images', 'index.html']);
         assert.deepEqual(await readdir(path.join(staging, 'images')), [name]);
+        assert.equal((await stat(path.join(staging, 'images'))).mode & 0o777, 0o755);
+        assert.equal((await stat(path.join(staging, 'images', name))).mode & 0o777, 0o644);
+        assert.equal((await stat(path.join(staging, 'index.html'))).mode & 0o777, 0o644);
         assert.ok(Math.abs((await stat(path.join(root, 'images', name))).mtimeMs - (await stat(path.join(staging, 'images', name))).mtimeMs) < 1);
         await writeFile(path.join(root, 'index.html'), 'changed during transfer');
       }

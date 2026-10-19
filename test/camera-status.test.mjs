@@ -49,8 +49,18 @@ test('missing, disabled and stale cameras do not imply zero detections', () => {
 });
 test('fresh zero detections stay green while incomplete coverage is explained separately', () => {
   const html = render(camera(['clear', 'warning', 'warning', 'warning', 'warning'], { frames: 1 }));
-  assert.match(html, />Spaghetti detected 0\/5</);
+  assert.match(html, />No Spaghetti found</);
   assert.match(html, /spaghetti-status ok/);
   assert.match(html, /Collecting camera checks/);
   assert.match(html, /0 positive in 1 recent checks/);
+});
+
+test('image-only C120 views cannot add detections or incomplete coverage', () => {
+  const internal = camera(Array(5).fill('clear'));
+  for (const state of ['warning', 'unavailable', 'preview']) {
+    const html = render(internal, camera([state], { detectionEnabled: false }));
+    assert.match(html, />No Spaghetti found</);
+    assert.doesNotMatch(html, /camera-coverage|Tapo C120/);
+  }
+  assert.match(render(undefined, camera(['preview'], { detectionEnabled: false })), />Spaghetti detected —\/5</);
 });

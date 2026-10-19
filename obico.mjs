@@ -37,6 +37,7 @@ export class ObicoMonitor {
     this.getJobKey = getJobKey;
     if (!['flashforge-integrated', 'tapo-c120'].includes(source)) throw new Error('Unsupported camera source');
     this.source = source;
+    this.detectionEnabled = source !== 'tapo-c120' || printerId === 'ad5m';
     this.enabled = existsSync(path.join(root, 'data', source === 'tapo-c120' ? `camera-${printerId}.json` : 'printers.json')) && process.env.FLASHFORGE_CAMERA !== 'off';
     this.nextAt = 0;
     this.sequence = 0;
@@ -127,13 +128,14 @@ export class ObicoMonitor {
     }
     const sharedFrame = Number.isFinite(pending.frameCapturedAt) && result.capturedAt === pending.frameCapturedAt && pending.startedAt-result.capturedAt >= 0 && pending.startedAt-result.capturedAt <= 12000;
     if (result.type !== 'result' || !Number.isFinite(result.capturedAt) || (result.capturedAt < pending.startedAt && !sharedFrame) || result.capturedAt > Date.now() || typeof result.jpeg !== 'string' || result.jpeg.length > 4_000_000) throw new Error('Invalid image result');
-    const detection = nextDetection(this.previous, result, pending.jobKey);
+    const detection = this.detectionEnabled ? nextDetection(this.previous, result, pending.jobKey)
+      : { jobKey: pending.jobKey, capturedAt: result.capturedAt, state: 'preview', frames: 0, inferenceMs: null };
     this.previous = detection;
     this.suspended = false;
     this.latest = detection;
     this.image = Buffer.from(result.jpeg, 'base64');
     this.error = '';
-    this.history = [{ capturedAt: detection.capturedAt, state: detection.state }, ...this.history].slice(0, 12);
+    if (this.detectionEnabled) this.history = [{ capturedAt: detection.capturedAt, state: detection.state }, ...this.history].slice(0, 12);
   }
   view(now = Date.now()) {
     const sample = this.getSample();
@@ -146,15 +148,15 @@ export class ObicoMonitor {
     else if (now - this.latest.capturedAt > RESULT_TTL) { state = 'unavailable'; message = 'The last camera check is stale. Waiting for a fresh image.'; }
     else {
       state = this.latest.state;
-      message = { clear: 'No spaghetti detected in the latest image.', suspect: 'Possible spaghetti in one or more areas. Inspect the image while we check again.', warning: `Possible spaghetti detected repeatedly. Check the ${this.name} now.` }[state];
+      message = { preview: '', clear: '', suspect: 'Possible spaghetti in one or more areas. Inspect the image while we check again.', warning: `Possible spaghetti detected repeatedly. Check the ${this.name} now.` }[state];
     }
     const current = this.latest?.jobKey === this.getJobKey();
     const airPrinting = !sample?.connected || !Number.isFinite(Date.parse(sample?.lastSeen)) || Math.abs(now - Date.parse(sample.lastSeen)) > 15000
       ? { state: 'unknown', message: 'Air printing: printer status unavailable.' }
       : sample.rawState === 'printing'
-        ? { state: 'unverified', message: 'Filament flow is unverified. Obico cannot reliably detect printing into empty air.' }
+        ? { state: 'unverified', message: '' }
         : { state: 'inactive', message: 'Air printing: printer is not reporting an active print.' };
-    return { printerId: this.printerId, source: this.source, enabled: this.enabled, state, message, airPrinting: this.gap?.view(now) || this.height?.view(now) || airPrinting, checking: Boolean(this.pending), intervalSeconds: CAMERA_INTERVAL / 1000,
+    return { printerId: this.printerId, source: this.source, enabled: this.enabled, detectionEnabled: this.detectionEnabled, state, message, airPrinting: this.gap?.view(now) || this.height?.view(now) || airPrinting, checking: Boolean(this.pending), intervalSeconds: CAMERA_INTERVAL / 1000,
       capturedAt: this.latest?.capturedAt || null, imageUrl: this.image ? `/api/camera/${this.printerId}/${this.source === 'tapo-c120' ? 'tapo/' : ''}image?t=${this.latest.capturedAt}` : null,
       frames: current ? this.latest.frames : 0, inferenceMs: this.latest?.inferenceMs ?? null, history: this.history };
   }

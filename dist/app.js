@@ -63,12 +63,55 @@ async function api(url, options = {}) {
 function temperature(label, value) {
   return `<div class="temp"><dt>${escape(label)}</dt><dd>${temp(value?.current)} <span class="target">/ ${temp(value?.target)}°</span></dd></div>`;
 }
+// Flashforge table checked 2026-10-14. Use reported slot materials, never infer from temperature.
+function coldPullSettings(printerId, nozzle) {
+  try {
+    const value = JSON.parse(localStorage.getItem(`cold-pull:${printerId}:${nozzle}`));
+    return { material: ['PLA', 'PETG', 'SILK', 'ABS', 'Others'].includes(value?.material) ? value.material : '', cleaner: value?.cleaner === 'PLA' ? 'PLA' : 'PETG' };
+  } catch { return { material: '', cleaner: 'PETG' }; }
+}
+function coldPullNozzle(printerId, nozzle, reportedMaterial = null, hasFilament = null) {
+  const { material: override, cleaner } = coldPullSettings(printerId, nozzle);
+  const reported = typeof reportedMaterial === 'string' ? reportedMaterial.trim() : '';
+  const tableMaterial = ['PLA', 'PETG', 'SILK', 'ABS'].includes(reported.toUpperCase()) ? reported.toUpperCase() : reported ? 'Others' : '';
+  const material = tableMaterial || override;
+  const substitute = material === 'ABS' || material === 'Others';
+  const pullFilament = substitute ? cleaner : material;
+  const pullTemperature = pullFilament === 'PETG' ? 95 : 80;
+  const loading = material === 'Others' ? 'the loading temperature specified for the original filament' : '250°C';
+  return `<section class="cold-pull-nozzle" data-cold-nozzle="${nozzle}" data-cold-printer="${printerId}" data-reported-material="${escape(reported)}" data-has-filament="${hasFilament === false ? 'false' : hasFilament === true ? 'true' : 'unknown'}"><h4>Nozzle ${nozzle}</h4>
+    <p class="help">${reported ? `Printer reports ${escape(reported)}${hasFilament === false ? ' · No filament detected' : ''}.` : 'Live filament type unavailable.'}${!reported && override ? ' Manual selection active.' : ''}</p>
+    <label>Filament in nozzle<select data-cold-material${reported ? ' disabled' : ''}><option value="">${reported ? 'Use printer: ' + escape(reported) : 'Select filament'}</option>${['PLA', 'PETG', 'SILK', 'ABS', 'Others'].map(name => `<option${!reported && name === override ? ' selected' : ''}>${name}</option>`).join('')}</select></label>
+    ${substitute ? `<label>Filament to pull with<select data-cold-cleaner>${['PETG', 'PLA'].map(name => `<option${name === cleaner ? ' selected' : ''}>${name}</option>`).join('')}</select></label>` : ''}
+    ${material ? `<p><strong>Use ${pullFilament}. Heat to ${loading}; cool to ${pullTemperature}°C before pulling.</strong></p>` : '<p class="help">Confirm the filament currently in this nozzle to see its temperatures. Choose Others for materials absent from the table.</p>'}</section>`;
+}
+function coldPullInstructions(printer, task) {
+  if (!['c5', 'c5p'].includes(printer.id) || task?.id !== 'cold-pull') return '';
+  const age = Date.now() - Date.parse(printer.lastSeen);
+  const fresh = printer.connected && age >= 0 && age <= 15000;
+  return `<details class="cold-pull-instructions"${task.due ? ' open' : ''}><summary>Cold-pull instructions · all four nozzles</summary>
+    <p class="help">${fresh ? `Live report: ${escape(new Date(printer.lastSeen).toLocaleTimeString())}.` : 'Fresh printer report unavailable. Reconnect the printer to check filament at maintenance time.'} Live printer slot settings select the instructions automatically. Confirm they match the loaded filament. If live filament data is unavailable, you can select the filament manually in this browser. Live data takes priority when it returns.</p>
+    ${[1, 2, 3, 4].map(nozzle => coldPullNozzle(printer.id, nozzle, fresh ? printer.nozzles?.[nozzle - 1]?.material : null, fresh ? printer.nozzles?.[nozzle - 1]?.hasFilament : null)).join('')}
+    <p>Repeat for each nozzle, using its temperatures above:</p>
+    <ol><li>Cut and unload the old filament. Heat, then disconnect the guide tube.</li><li>Undock the extruder, support it, and manually feed the pull filament. Continue for about 20 seconds after extrusion begins.</li><li>Set the pull temperature. Keep feeding as it cools until extrusion slows, then redock and wait for the target temperature.</li><li>Undock, fit the cold-pull tool, support the extruder and pull slowly and steadily. Repeat if the filament breaks.</li></ol>
+    <p><a href="https://wiki.flashforge.com/en/creator-series/creator-5-series/maintenance/nozzle-cold-pull-cleaning" target="_blank" rel="noopener noreferrer">Flashforge instructions, tool file and video</a> · Table checked October 14, 2026.</p></details>`;
+}
+function updateColdPullDialog(printer) {
+  const container = $('#maintenance-instructions');
+  const task = printer.maintenance?.schedules.find(task => task.id === maintenanceTaskId);
+  const html = coldPullInstructions(printer, task);
+  if (container.dataset.rendered === html) return;
+  const open = container.querySelector('details')?.open ?? true;
+  container.innerHTML = html;
+  container.dataset.rendered = html;
+  if (container.querySelector('details')) container.querySelector('details').open = open;
+}
 function spaghettiStatus(p, cameras = latestCameras, externalCameras = latestExternalCameras) {
   if (!p.connected || p.rawState !== 'printing') return '';
   const sources = [
     { camera: cameras[p.id], label: 'Integrated camera' },
     { camera: externalCameras[p.id], label: 'Tapo C120' },
-  ].filter(({ camera }) => camera?.enabled);
+  ].filter(({ camera }) => camera?.enabled && camera.detectionEnabled !== false);
   const windows = sources.map(({ camera, label }) => {
     const current = ['clear', 'suspect', 'warning'].includes(camera.state);
     // Frames resets on a new print or interrupted detection sequence. Do not count older history.
@@ -82,7 +125,8 @@ function spaghettiStatus(p, cameras = latestCameras, externalCameras = latestExt
   const details = windows.length ? windows.map(w => `${w.label}: ${w.checked ? `${w.positive} positive in ${w.checked} recent checks` : 'waiting for current checks'}`).join('. ') : 'Camera checks unavailable.';
   const title = `Last 5 checks per camera; the higher positive count is shown. Inspect image and Check print now count as positive. ${details}`;
   const coverage = best && !complete ? `<span class="camera-coverage">${windows.some(w => !w.current) ? 'Camera check unavailable' : 'Collecting camera checks'}</span>` : '';
-  return `<span class="spaghetti-status ${tone}" title="${escape(title)}">Spaghetti detected ${best ? best.positive : '—'}/5</span>${coverage}`;
+  const label = best?.positive === 0 ? 'No Spaghetti found' : `Spaghetti detected ${best ? best.positive : '—'}/5`;
+  return `<span class="spaghetti-status ${tone}" title="${escape(title)}">${label}</span>${coverage}`;
 }
 function card(p) {
   const live = p.connected;
@@ -95,7 +139,7 @@ function card(p) {
     : `<div class="empty"><p>${escape(p.message)}</p>${!p.configured ? `<button data-settings="${p.id}">Connect printer</button>` : ''}${p.lastSeen ? `<small>Last seen ${escape(new Date(p.lastSeen).toLocaleString())}</small>` : ''}</div>`;
   const m = p.maintenance;
   const maintenance = `<div class="maintenance-block ${m.due ? 'due' : ''}"><div class="maintenance-heading"><strong>${m.due ? 'Maintenance due' : 'Maintenance'}</strong><button class="text-button" data-maintenance="${p.id}">Add task</button></div>
-    ${m.schedules.length ? m.schedules.map(task => `<div class="maintenance-task ${task.due ? 'due' : ''}"><div class="maintenance-heading"><span>${escape(task.name)}${task.due ? ' · Due now' : ''}</span><button class="text-button" data-maintenance="${p.id}" data-task="${escape(task.id)}">Manage</button></div><p class="help">${[task.hours ? `Every ${task.hours} printing hours${task.hoursRemaining !== null ? ` · ${hoursLabel(task.hoursRemaining)} left` : ' · Tracking unavailable'}` : '', task.dueAt ? `Due ${new Date(task.dueAt).toLocaleDateString()}` : ''].filter(Boolean).join(' · ')}</p>${task.initialDueLifetimeHours != null ? `<p class="help">First due at ${task.initialDueLifetimeHours.toLocaleString()} total hours · No prior service recorded</p>` : ''}${task.lastServiced ? `<p class="help">Serviced ${new Date(task.lastServiced).toLocaleDateString()}</p>` : ''}</div>`).join('') : '<p>No reminders set</p>'}
+    ${m.schedules.length ? m.schedules.map(task => `<div class="maintenance-task ${task.due ? 'due' : ''}"><div class="maintenance-heading"><span>${escape(task.name)}${task.due ? ' · Due now' : ''}</span><button class="text-button" data-maintenance="${p.id}" data-task="${escape(task.id)}">Manage</button></div><p class="help">${[task.hours ? `Every ${task.hours} printing hours${task.hoursRemaining !== null ? ` · ${hoursLabel(task.hoursRemaining)} left` : ' · Tracking unavailable'}` : '', task.dueAt ? `Due ${new Date(task.dueAt).toLocaleDateString()}` : ''].filter(Boolean).join(' · ')}</p>${task.initialDueLifetimeHours != null ? `<p class="help">First due at ${task.initialDueLifetimeHours.toLocaleString()} total hours · No prior service recorded</p>` : ''}${task.lastServiced ? `<p class="help">Serviced ${new Date(task.lastServiced).toLocaleDateString()}</p>` : ''}${coldPullInstructions(p, task)}</div>`).join('') : '<p>No reminders set</p>'}
     ${m.baseline ? `<div class="baseline-total"><strong>${hoursLabel(m.lifetimeHours)} total printing</strong><p class="help">Baseline + printing observed since ${escape(new Date(m.baseline.recordedAt).toLocaleDateString())}</p><details><summary>Machine baseline</summary><dl class="baseline-details"><dt>Printing counter</dt><dd>${hoursLabel(m.baseline.printingSeconds / 3600)}</dd><dt>Material counter</dt><dd>${m.baseline.materialCm.toLocaleString()} cm</dd><dt>Nozzles</dt><dd>${m.baseline.nozzleDiameters.map(n => `${n} mm`).join(' / ')}</dd><dt>Build volume</dt><dd>${m.baseline.buildVolume.join(' × ')} mm</dd><dt>Firmware</dt><dd>${escape(m.baseline.firmwareVersion)}</dd>${localTools ? `<dt>Serial number</dt><dd>${escape(m.baseline.serialNumber)}</dd>` : ''}</dl></details></div>` : ''}
     <p class="help">${m.hoursAvailable ? `${m.observedHours.toFixed(2)} printing hours observed since ${new Date(m.trackingSince).toLocaleDateString()}` : 'Print hours are not available for this printer yet.'}</p></div>`;
   return `<article class="card"><div class="card-top"><div><h2>${escape(p.name)}</h2><p class="model">${escape(p.model)}</p></div><div class="printer-status"><span class="badge ${p.health}">${escape(p.state)}</span>${spaghettiStatus(p)}</div></div><div class="card-body">${body}${maintenance}</div><div class="card-bottom"><span>${escape(p.host || 'Connection not set')}${p.transport ? ` · ${escape(p.transport)}` : ''}</span><button class="text-button" data-settings="${p.id}">Settings</button></div></article>`;
@@ -161,17 +205,20 @@ function renderCamera(camera, id, source = '') {
     if (!camera?.enabled) return;
   }
   const c = camera || { state: 'unavailable', message: 'Restart the dashboard to enable camera detection.' };
-  const labels = { clear: 'No spaghetti detected', suspect: 'Inspect image', warning: 'Check print now', starting: 'Starting', idle: 'Waiting for printing', unavailable: 'Unavailable', disabled: 'Not configured' };
+  const labels = { preview: 'Image only', clear: 'No spaghetti detected', suspect: 'Inspect image', warning: 'Check print now', starting: 'Starting', idle: 'Waiting for printing', unavailable: 'Unavailable', disabled: 'Not configured' };
   element('badge').textContent = labels[c.state] || 'Unavailable';
   element('badge').className = `badge ${c.state === 'clear' ? 'ok' : ['warning', 'suspect'].includes(c.state) ? 'warning' : 'unknown'}`;
-  element('message').textContent = c.message;
-  element('detail').textContent = `${c.frames || 0} images checked this session · ${c.checking ? 'Checking a new image…' : 'Checks about every 20–25 seconds while printing.'}`;
-  element('timestamp').textContent = c.capturedAt ? `Last analyzed image: ${new Date(c.capturedAt).toLocaleString()}` : 'No image analyzed yet.';
-  if (element('air')) element('air').textContent = c.airPrinting?.message || 'Filament flow has not been checked.';
+  element('message').textContent = ['preview', 'clear'].includes(c.state) ? '' : c.message;
+  element('message').hidden = ['preview', 'clear'].includes(c.state);
+  const preview = c.detectionEnabled === false;
+  element('timestamp').textContent = c.capturedAt ? `${preview ? 'Last captured image' : 'Last analyzed image'}: ${new Date(c.capturedAt).toLocaleString()}` : 'No image captured yet.';
   const img = element('image');
   if (c.imageUrl && img.getAttribute('src') !== c.imageUrl) img.src = c.imageUrl;
   img.hidden = !c.imageUrl;
   element('placeholder').hidden = Boolean(c.imageUrl);
+  if (!c.imageUrl) element('placeholder').textContent = c.state === 'idle'
+    ? 'An image will appear once there is an active print.'
+    : c.state === 'starting' ? 'Waiting for the first image from this print…' : c.message;
   element('history').innerHTML = (c.history || []).slice(0, 5).map(h => `<li><time>${escape(new Date(h.capturedAt).toLocaleTimeString())}</time><span>${escape(labels[h.state])}</span></li>`).join('');
 }
 for (const [id, source] of cameraViews) {
@@ -179,7 +226,7 @@ for (const [id, source] of cameraViews) {
   element('image').addEventListener('error', () => {
     element('image').hidden = true;
     element('placeholder').hidden = false;
-    element('placeholder').textContent = 'The last analyzed image could not be loaded.';
+    element('placeholder').textContent = 'The latest camera image could not be loaded.';
   });
 }
 async function refresh() {
@@ -197,6 +244,10 @@ async function refresh() {
     if (!localTools && !$('#panel-job').hidden) selectView(viewTabs[0]);
     const printers = data.printers;
     latestPrinters = printers;
+    if (maintenanceDialog.open && maintenanceTaskId === 'cold-pull') {
+      const printer = printers.find(p => p.id === maintenanceId);
+      if (printer) updateColdPullDialog(printer);
+    }
     latestCameras = data.cameras || {};
     latestExternalCameras = data.externalCameras || {};
     for (const id of internalCameraIds) renderCamera(data.cameras?.[id], id);
@@ -225,6 +276,7 @@ async function refresh() {
     $('#storage-error').textContent = data.storageError || '';
     $('#storage-error').hidden = !data.storageError;
   } catch {
+    if (maintenanceDialog.open && maintenanceTaskId === 'cold-pull') updateColdPullDialog({ id: maintenanceId, connected: false, maintenance: { schedules: [{ id: 'cold-pull' }] } });
     for (const indicator of document.querySelectorAll('.spaghetti-status')) {
       indicator.textContent = 'Spaghetti detected —/5';
       indicator.className = 'spaghetti-status unknown';
@@ -236,7 +288,6 @@ async function refresh() {
       element('badge').textContent = 'Unavailable';
       element('badge').className = 'badge unknown';
       element('message').textContent = 'Dashboard disconnected. The image and detection result are stale.';
-      if (element('air')) element('air').textContent = 'Air printing: printer status unavailable.';
     }
     $('#connection-error').textContent = 'Dashboard service disconnected. Readings below are stale. Restart the app on this Mac to reconnect.';
     $('#connection-error').hidden = false;
@@ -288,7 +339,7 @@ form.addEventListener('submit', async event => {
   } catch (error) { $('#form-error').textContent = error.message; }
   finally { $('#save').disabled = false; }
 });
-$('#printers').addEventListener('click', event => {
+$('#printers').addEventListener('click', async event => {
   if (!localTools) return;
   const button = event.target.closest('[data-maintenance]');
   if (!button) return;
@@ -304,9 +355,24 @@ $('#printers').addEventListener('click', event => {
   $('#maintenance-days').value = schedule?.days || '';
   $('#maintenance-hours').disabled = !hoursAvailable;
   $('#maintenance-help').textContent = hoursAvailable ? 'Hours count only while this app is running and receiving printing status. Earlier use and time offline are not included.' : 'Calendar reminders work now. Printing hours cannot be counted until live monitoring is connected.';
+  $('#maintenance-instructions').innerHTML = '';
+  delete $('#maintenance-instructions').dataset.rendered;
   $('#maintenance-error').textContent = '';
   $('#mark-serviced').hidden = !schedule;
   maintenanceDialog.showModal();
+  if (maintenanceTaskId === 'cold-pull') {
+    const requestedId = maintenanceId;
+    $('#maintenance-instructions').textContent = 'Checking current nozzle filaments…';
+    try {
+      const data = await api('/api/printers');
+      if (!maintenanceDialog.open || maintenanceId !== requestedId || maintenanceTaskId !== 'cold-pull') return;
+      const current = data.printers.find(p => p.id === requestedId);
+      if (!current) throw new Error('Printer unavailable');
+      updateColdPullDialog(current);
+    } catch {
+      if (maintenanceDialog.open && maintenanceId === requestedId && maintenanceTaskId === 'cold-pull') updateColdPullDialog({ ...printer, connected: false });
+    }
+  }
 });
 $('#maintenance-close').addEventListener('click', () => maintenanceDialog.close());
 async function saveMaintenance(serviced = false) {
@@ -454,3 +520,14 @@ $('#cloud-reconnect').addEventListener('click', async () => {
 initHeight(api, refresh);
 void refresh();
 setInterval(refresh, 5000);
+
+document.addEventListener('change', event => {
+  if (!event.target.matches('[data-cold-material], [data-cold-cleaner]')) return;
+  const section = event.target.closest('[data-cold-nozzle]');
+  const printerId = section.dataset.coldPrinter;
+  const nozzle = Number(section.dataset.coldNozzle);
+  const value = { material: section.querySelector('[data-cold-material]').value, cleaner: section.querySelector('[data-cold-cleaner]')?.value || 'PETG' };
+  try { localStorage.setItem(`cold-pull:${printerId}:${nozzle}`, JSON.stringify(value)); }
+  catch { section.insertAdjacentHTML('beforeend', '<p role="alert">Enable browser storage to remember filament choices and show instructions.</p>'); return; }
+  section.outerHTML = coldPullNozzle(printerId, nozzle, section.dataset.reportedMaterial, section.dataset.hasFilament === 'unknown' ? null : section.dataset.hasFilament === 'true');
+});

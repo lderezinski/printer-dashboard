@@ -144,3 +144,19 @@ test('baseline changes preserve service records and observed counters; initial t
   setBaseline(record,baseline(400*3600),3000); assert.equal(lifetimeHours(record),400); assert.equal(record.baselineHistory.length,1);
   assert.equal(record.observedSeconds,22*3600+19*60);
 });
+
+test('slot material metadata maps by slot ID, excluding unrelated raw data', () => {
+  const matlStationInfo = { slotInfos: [
+    { slotId: 4, materialName: 'SILK', hasFilament: true, token: 'must-not-escape' },
+    { slotId: 1, materialName: 'PETG', hasFilament: false },
+    { slotId: 9, materialName: 'ABS', hasFilament: true },
+  ] };
+  const report = parseCloudMessage(message({ matlStationInfo }), devices, settings, 1000);
+  assert.equal(report.sample.nozzles[0].material, 'PETG');
+  assert.equal(report.sample.nozzles[0].hasFilament, false);
+  assert.equal(report.sample.nozzles[1].material, undefined);
+  assert.equal(report.sample.nozzles[3].material, 'SILK');
+  assert.ok(!JSON.stringify(report).includes('must-not-escape'));
+  const duplicate = parseCloudMessage(message({ matlStationInfo: { slotInfos: [{ slotId: 1, materialName: 'PLA' }, { slotId: 1, materialName: 'PETG' }] } }), devices, settings, 1000);
+  assert.equal(duplicate.sample.nozzles[0].material, undefined);
+});

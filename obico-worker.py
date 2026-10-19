@@ -33,9 +33,6 @@ def main():
     import imageio_ffmpeg
     import numpy as np
     import cv2
-    import onnxruntime as ort
-    from lib.onnx import OnnxNet
-    from lib.meta import Meta
 
     printer_id = sys.argv[1] if len(sys.argv) > 1 else 'ad5m'
     if printer_id not in ('ad5m', 'a5mp', 'c5', 'c5p'):
@@ -54,16 +51,21 @@ def main():
             if not isinstance(config[key], str) or any(c in config[key] for c in '@\r\n/'):
                 raise ValueError('Unsupported camera account characters')
         url = f"rtsp://{config['username']}:{config['password']}@{address}:554/stream1"
-    model = ROOT / 'data' / 'obico-model' / 'model.onnx'
-    expected = '0a6ebd8e30dbf6a450c50f9c0a5406f04ba7eb1c99fd5996e888c78bb383b9aa'
-    if hashlib.sha256(model.read_bytes()).hexdigest() != expected:
-        raise ValueError('Unexpected model checksum')
-    options = ort.SessionOptions()
-    options.intra_op_num_threads = 2
-    options.inter_op_num_threads = 1
-    net = OnnxNet.__new__(OnnxNet)
-    net.session = ort.InferenceSession(str(model), sess_options=options, providers=['CPUExecutionProvider'])
-    net.meta = Meta(str(ROOT / 'vendor' / 'obico' / 'model.meta'))
+    detection_enabled = source != 'tapo-c120' or printer_id == 'ad5m'
+    if detection_enabled:
+        import onnxruntime as ort
+        from lib.onnx import OnnxNet
+        from lib.meta import Meta
+        model = ROOT / 'data' / 'obico-model' / 'model.onnx'
+        expected = '0a6ebd8e30dbf6a450c50f9c0a5406f04ba7eb1c99fd5996e888c78bb383b9aa'
+        if hashlib.sha256(model.read_bytes()).hexdigest() != expected:
+            raise ValueError('Unexpected model checksum')
+        options = ort.SessionOptions()
+        options.intra_op_num_threads = 2
+        options.inter_op_num_threads = 1
+        net = OnnxNet.__new__(OnnxNet)
+        net.session = ort.InferenceSession(str(model), sess_options=options, providers=['CPUExecutionProvider'])
+        net.meta = Meta(str(ROOT / 'vendor' / 'obico' / 'model.meta'))
     ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
     from height_capture import HeightCamera
     from flashforge_camera import capture_flashforge
@@ -112,7 +114,7 @@ def main():
         try:
             started = time.monotonic()
             # Obico's server uses 0.08 for proposals and 0.45 for suppression.
-            detections = net.detect(net.meta, img, None, thresh=0.08, nms=0.45)
+            detections = net.detect(net.meta, img, None, thresh=0.08, nms=0.45) if detection_enabled else []
             inference_ms = round((time.monotonic() - started) * 1000)
             for label, confidence, (xc, yc, w, h) in detections:
                 if confidence < 0.3:

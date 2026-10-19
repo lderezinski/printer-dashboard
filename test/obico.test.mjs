@@ -164,3 +164,22 @@ test('air printing remains unverified while printing, inactive while ready, and 
   assert.equal(monitor.view(now).airPrinting.state, 'inactive');
   assert.equal(monitor.view(now + 15001).airPrinting.state, 'unknown');
 });
+
+test('C120 views for printers with internal cameras retain images without detection results', () => {
+  const at = Date.now();
+  for (const id of ['a5mp', 'c5', 'c5p']) {
+    const monitor = new ObicoMonitor('/nonexistent', () => ({ ...sample, lastSeen: new Date(at).toISOString() }), () => 'job', id, 'tapo-c120');
+    monitor.enabled = true;
+    monitor.pending = { id: 1, jobKey: 'job', startedAt: at };
+    monitor.receive({ ...result(0.99, at), type: 'result', id: 1, jpeg: Buffer.from('camera-image').toString('base64') });
+    const view = monitor.view(at);
+    assert.equal(view.detectionEnabled, false);
+    assert.equal(view.state, 'preview');
+    assert.equal(view.frames, 0);
+    assert.deepEqual(view.history, []);
+    assert.equal(monitor.image.toString(), 'camera-image');
+    assert.match(view.imageUrl, new RegExp(`/api/camera/${id}/tapo/image`));
+    assert.equal(new ObicoMonitor('/nonexistent', () => sample, () => 'job', id).detectionEnabled, true);
+  }
+  assert.equal(new ObicoMonitor('/nonexistent', () => sample, () => 'job', 'ad5m', 'tapo-c120').detectionEnabled, true);
+});

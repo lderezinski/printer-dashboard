@@ -42,7 +42,7 @@ SPDX-License-Identifier: AGPL-3.0-only
         <div class="camera-heading"><div><h2 id="camera-a5mp-heading">A5MP camera check</h2><p class="help">Flashforge integrated camera · Local spaghetti detection</p></div><span id="camera-a5mp-badge" class="badge unknown">Connecting</span></div>
         <div class="camera-content">
           <figure><img id="camera-a5mp-image" alt="A5MP integrated camera; boxes mark possible spaghetti" width="640" height="480" hidden><p id="camera-a5mp-placeholder" class="help">Waiting for the first image…</p><figcaption id="camera-a5mp-timestamp" class="help">No image analyzed yet.</figcaption></figure>
-          <div><p id="camera-a5mp-message" aria-live="polite">Connecting to the local detector…</p><p id="camera-a5mp-detail" class="help">Checks while the A5MP is printing.</p><p id="camera-a5mp-air" class="help">Filament flow has not been checked.</p><p class="help">Looks for visible spaghetti. A clear result does not confirm filament is flowing. Inspect the print if you suspect a clog.</p><p class="help">Alerts appear here; the printer will keep running.</p><ol id="camera-a5mp-history" class="camera-history" aria-label="Recent A5MP spaghetti checks"></ol></div>
+          <div><p id="camera-a5mp-message" aria-live="polite">Connecting to the local detector…</p><ol id="camera-a5mp-history" class="camera-history" aria-label="Recent A5MP spaghetti checks"></ol></div>
         </div>
         <!-- Gap-check UI is retained for later use. -->
         <section class="dual-camera-view" aria-labelledby="height-heading" hidden>
@@ -55,31 +55,31 @@ SPDX-License-Identifier: AGPL-3.0-only
           </details>
         </section>
         <section id="camera-a5mp-tapo-tile" class="external-camera" aria-labelledby="camera-a5mp-tapo-heading" hidden>
-          <div class="camera-heading"><h3 id="camera-a5mp-tapo-heading">Tapo C120 · Additional spaghetti check</h3><span id="camera-a5mp-tapo-badge" class="badge unknown">Connecting</span></div>
+          <div class="camera-heading"><h3 id="camera-a5mp-tapo-heading">Tapo C120 · Camera view</h3><span id="camera-a5mp-tapo-badge" class="badge unknown">Connecting</span></div>
           <div class="camera-content">
-            <figure><img id="camera-a5mp-tapo-image" alt="A5MP additional Tapo C120 view; boxes mark possible spaghetti" width="1280" height="720" hidden><p id="camera-a5mp-tapo-placeholder" class="help">Waiting for a C120 image…</p><figcaption id="camera-a5mp-tapo-timestamp" class="help">No image analyzed yet.</figcaption></figure>
-            <div><p id="camera-a5mp-tapo-message" aria-live="polite">Connecting…</p><p id="camera-a5mp-tapo-detail" class="help"></p><p class="help">Keep the build plate and print in view. This check runs independently of the internal camera; inspect an alert from either view.</p><ol id="camera-a5mp-tapo-history" class="camera-history" aria-label="Recent A5MP C120 checks"></ol></div>
+            <figure><img id="camera-a5mp-tapo-image" alt="A5MP additional Tapo C120 view" width="1280" height="720" hidden><p id="camera-a5mp-tapo-placeholder" class="help">Waiting for a C120 image…</p><figcaption id="camera-a5mp-tapo-timestamp" class="help">No image analyzed yet.</figcaption></figure>
+            <div><p id="camera-a5mp-tapo-message" aria-live="polite">Connecting…</p><ol id="camera-a5mp-tapo-history" class="camera-history" aria-label="Recent A5MP C120 checks"></ol></div>
           </div>
         </section>
       </section>
       <section id="camera-tapo-tile" class="camera-monitor" aria-labelledby="camera-heading" hidden>
         <div class="camera-heading"><div><h2 id="camera-heading">AD5M camera check</h2><p class="help">Tapo C120 · Local spaghetti detection</p></div><span id="camera-tapo-badge" class="badge unknown">Connecting</span></div>
         <div class="camera-content">
-          <figure><img id="camera-tapo-image" alt="AD5M Tapo C120 view; boxes mark possible spaghetti" width="1280" height="720" hidden><p id="camera-tapo-placeholder" class="help">Waiting for a C120 image…</p><figcaption id="camera-tapo-timestamp" class="help">No image analyzed yet.</figcaption></figure>
-          <div><p id="camera-tapo-message" aria-live="polite">Connecting…</p><p id="camera-tapo-detail" class="help"></p><p class="help">Keep the build plate and print in view. A clear result does not confirm filament flow. Inspect any alert; the printer keeps running.</p><ol id="camera-tapo-history" class="camera-history" aria-label="Recent AD5M C120 checks"></ol></div>
+          <figure><img id="camera-tapo-image" alt="AD5M Tapo C120 view" width="1280" height="720" hidden><p id="camera-tapo-placeholder" class="help">Waiting for a C120 image…</p><figcaption id="camera-tapo-timestamp" class="help">No image analyzed yet.</figcaption></figure>
+          <div><p id="camera-tapo-message" aria-live="polite">Connecting…</p><ol id="camera-tapo-history" class="camera-history" aria-label="Recent AD5M C120 checks"></ol></div>
         </div>
       </section>
       <section class="camera-monitor" aria-labelledby="camera-c5-heading">
         <div class="camera-heading"><div><h2 id="camera-c5-heading">C5 camera check</h2><p class="help">Flashforge integrated camera · Local spaghetti detection</p></div><span id="camera-c5-badge" class="badge unknown">Connecting</span></div>
         <div class="camera-content">
           <figure><img id="camera-c5-image" alt="Last C5 camera image analyzed by Obico; boxes mark possible spaghetti" width="640" height="480" hidden><p id="camera-c5-placeholder" class="help">Waiting for the first image…</p><figcaption id="camera-c5-timestamp" class="help">No image analyzed yet.</figcaption></figure>
-          <div><p id="camera-c5-message" aria-live="polite">Connecting to the local detector…</p><p id="camera-c5-detail" class="help">Checks while the C5 is printing.</p><p id="camera-c5-air" class="help">Filament flow has not been checked.</p><p class="help">Looks for visible spaghetti. A clear result does not confirm filament is flowing. Inspect the print if you suspect a clog.</p><p class="help">Alerts appear here; the printer will keep running.</p><ol id="camera-c5-history" class="camera-history" aria-label="Recent camera checks"></ol></div>
+          <div><p id="camera-c5-message" aria-live="polite">Connecting to the local detector…</p><ol id="camera-c5-history" class="camera-history" aria-label="Recent camera checks"></ol></div>
         </div>
         <section id="camera-c5-tapo-tile" class="external-camera" aria-labelledby="camera-c5-tapo-heading" hidden>
-          <div class="camera-heading"><h3 id="camera-c5-tapo-heading">Tapo C120 · Additional spaghetti check</h3><span id="camera-c5-tapo-badge" class="badge unknown">Connecting</span></div>
+          <div class="camera-heading"><h3 id="camera-c5-tapo-heading">Tapo C120 · Camera view</h3><span id="camera-c5-tapo-badge" class="badge unknown">Connecting</span></div>
           <div class="camera-content">
-            <figure><img id="camera-c5-tapo-image" alt="C5 additional Tapo C120 view; boxes mark possible spaghetti" width="1280" height="720" hidden><p id="camera-c5-tapo-placeholder" class="help">Waiting for a C120 image…</p><figcaption id="camera-c5-tapo-timestamp" class="help">No image analyzed yet.</figcaption></figure>
-            <div><p id="camera-c5-tapo-message" aria-live="polite">Connecting…</p><p id="camera-c5-tapo-detail" class="help"></p><p class="help">Keep the build plate and print in view. This check runs independently of the internal camera; inspect an alert from either view.</p><ol id="camera-c5-tapo-history" class="camera-history" aria-label="Recent C5 C120 checks"></ol></div>
+            <figure><img id="camera-c5-tapo-image" alt="C5 additional Tapo C120 view" width="1280" height="720" hidden><p id="camera-c5-tapo-placeholder" class="help">Waiting for a C120 image…</p><figcaption id="camera-c5-tapo-timestamp" class="help">No image analyzed yet.</figcaption></figure>
+            <div><p id="camera-c5-tapo-message" aria-live="polite">Connecting…</p><ol id="camera-c5-tapo-history" class="camera-history" aria-label="Recent C5 C120 checks"></ol></div>
           </div>
         </section>
       </section>
@@ -87,13 +87,13 @@ SPDX-License-Identifier: AGPL-3.0-only
         <div class="camera-heading"><div><h2 id="camera-c5p-heading">C5P camera check</h2><p class="help">Flashforge integrated camera · Local spaghetti detection</p></div><span id="camera-c5p-badge" class="badge unknown">Connecting</span></div>
         <div class="camera-content">
           <figure><img id="camera-c5p-image" alt="Last C5P camera image analyzed by Obico; boxes mark possible spaghetti" width="640" height="480" hidden><p id="camera-c5p-placeholder" class="help">Waiting for the first image…</p><figcaption id="camera-c5p-timestamp" class="help">No image analyzed yet.</figcaption></figure>
-          <div><p id="camera-c5p-message" aria-live="polite">Connecting to the local detector…</p><p id="camera-c5p-detail" class="help">Checks while the C5P is printing.</p><p id="camera-c5p-air" class="help">Filament flow has not been checked.</p><p class="help">Looks for visible spaghetti. A clear result does not confirm filament is flowing. Inspect the print if you suspect a clog.</p><p class="help">Alerts appear here; the printer will keep running.</p><ol id="camera-c5p-history" class="camera-history" aria-label="Recent camera checks"></ol></div>
+          <div><p id="camera-c5p-message" aria-live="polite">Connecting to the local detector…</p><ol id="camera-c5p-history" class="camera-history" aria-label="Recent camera checks"></ol></div>
         </div>
         <section id="camera-c5p-tapo-tile" class="external-camera" aria-labelledby="camera-c5p-tapo-heading" hidden>
-          <div class="camera-heading"><h3 id="camera-c5p-tapo-heading">Tapo C120 · Additional spaghetti check</h3><span id="camera-c5p-tapo-badge" class="badge unknown">Connecting</span></div>
+          <div class="camera-heading"><h3 id="camera-c5p-tapo-heading">Tapo C120 · Camera view</h3><span id="camera-c5p-tapo-badge" class="badge unknown">Connecting</span></div>
           <div class="camera-content">
-            <figure><img id="camera-c5p-tapo-image" alt="C5P additional Tapo C120 view; boxes mark possible spaghetti" width="1280" height="720" hidden><p id="camera-c5p-tapo-placeholder" class="help">Waiting for a C120 image…</p><figcaption id="camera-c5p-tapo-timestamp" class="help">No image analyzed yet.</figcaption></figure>
-            <div><p id="camera-c5p-tapo-message" aria-live="polite">Connecting…</p><p id="camera-c5p-tapo-detail" class="help"></p><p class="help">Keep the build plate and print in view. This check runs independently of the internal camera; inspect an alert from either view.</p><ol id="camera-c5p-tapo-history" class="camera-history" aria-label="Recent C5P C120 checks"></ol></div>
+            <figure><img id="camera-c5p-tapo-image" alt="C5P additional Tapo C120 view" width="1280" height="720" hidden><p id="camera-c5p-tapo-placeholder" class="help">Waiting for a C120 image…</p><figcaption id="camera-c5p-tapo-timestamp" class="help">No image analyzed yet.</figcaption></figure>
+            <div><p id="camera-c5p-tapo-message" aria-live="polite">Connecting…</p><ol id="camera-c5p-tapo-history" class="camera-history" aria-label="Recent C5P C120 checks"></ol></div>
           </div>
         </section>
       </section>
@@ -174,6 +174,7 @@ SPDX-License-Identifier: AGPL-3.0-only
       <div class="intervals"><label>Printing hours<input id="maintenance-hours" type="number" min="0.1" max="100000" step="0.1" placeholder="Optional"></label><label>Calendar days<input id="maintenance-days" type="number" min="1" max="36500" step="1" placeholder="Optional"></label></div>
       <p id="maintenance-help" class="help"></p>
       <p class="help">A new reminder starts today. Editing preserves its current counter. “Mark serviced” records today’s service and starts this task’s intervals again. Other tasks keep their counters.</p>
+      <div id="maintenance-instructions"></div>
       <p id="maintenance-error" class="error-text" role="alert"></p>
       <div class="dialog-actions"><button type="button" id="mark-serviced" class="secondary">Mark serviced today</button><button id="maintenance-save" type="submit">Save reminder</button></div>
     </form>

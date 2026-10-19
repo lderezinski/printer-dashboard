@@ -183,7 +183,7 @@ extra Tapo C120 view wherever one is configured. This AD5M setup has no internal
 camera, so it uses only its C120; the dashboard doesn't start an internal-camera
 tile or capture worker for it.
 
-Each view shows its image and recent checks. The A5MP also has an experimental
+Each view shows its image; detection views also show recent checks. The A5MP also has an experimental
 gap check, disabled by default and described below. When enabled, it keeps its
 own annotations, result, capture time, and history. An alert from either check
 contributes to **Need attention**.
@@ -197,12 +197,15 @@ status says `printing`. Camera addresses follow the printer hosts in
 disabled internal camera reports **Unavailable** and retries automatically.
 
 Each configured C120 gives you another view in the same printer tile, with its
-own detector, image, timestamp, and history. Its private account is read from
+own image and timestamp. Only AD5M uses C120 spaghetti detection; A5MP, C5,
+and C5P use their internal cameras for detection and keep C120 views as images
+only, without loading or running the detection model. Its private account is read from
 an ignored `data/camera-PRINTER_ID.json` file
 (`host`, `username`, `password`), using RTSP `stream1`. Without that file, the
 extra view stays hidden. If a configured C120 becomes unavailable, its status
 shows the failure while internal monitoring continues; an unavailable internal
-camera likewise does not stop the C120. Either source can raise Need attention.
+camera likewise does not stop the C120 images. Image-only views do not
+contribute to spaghetti status or Need attention.
 Camera credentials are never sent to the browser.
 
 Obico's detector runs locally here. You don't need the Obico phone app or cloud

@@ -37,7 +37,7 @@ export function parseCloudMessage(message, devices, settings, now = Date.now()) 
   const printer = MODELS.find(p => modelNames[p.id] === device.model && pids[p.id] === d.pid &&
     (settings[p.id]?.serialNumber ? settings[p.id].serialNumber === device.sn : settings[p.id]?.host === d.ipAddress));
   if (!printer || devices.filter(v => v.model === device.model).length !== 1 || typeof d.status !== 'string') return null;
-  const detail = { status: d.status, errorCode: d.errorCode, printFileName: d.fileName, printProgress: d.progress,
+  const detail = { matlStationInfo: d.matlStationInfo, status: d.status, errorCode: d.errorCode, printFileName: d.fileName, printProgress: d.progress,
     printLayer: d.printLayer, targetPrintLayer: d.targetLayer, estimatedTime: d.estimateTime,
     rightTemp: d.rightTemperature, rightTargetTemp: d.rightTargetTemperature,
     nozzleTemps: Array.isArray(d.nozzleTemps) ? d.nozzleTemps : [], nozzleTargetTemps: Array.isArray(d.nozzleTargetTemps) ? d.nozzleTargetTemps : [],

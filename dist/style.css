@@ -30,3 +30,5 @@ select{width:100%;box-sizing:border-box;background:#101419;color:#e7edf5;border:
 .printer-status{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap}.spaghetti-status{font-size:.875rem;white-space:nowrap}.spaghetti-status.ok{color:#91e9bc}.spaghetti-status.warning{color:#ffda8f}.spaghetti-status.error{color:#ffb6bb}.spaghetti-status.unknown{color:#a9b5c4}
 .camera-coverage{font-size:.875rem;color:#a9b5c4}
 footer a{color:inherit;text-underline-offset:3px}
+
+.cold-pull-instructions{margin-top:12px}.cold-pull-instructions summary{cursor:pointer}.cold-pull-nozzle{border-top:1px solid #48505c;padding:12px 0}.cold-pull-nozzle h4{margin:0 0 8px}.cold-pull-nozzle label{display:block;margin:8px 0}.cold-pull-nozzle select{display:block;width:100%;margin-top:6px;padding:8px}.cold-pull-instructions li{margin-bottom:8px}

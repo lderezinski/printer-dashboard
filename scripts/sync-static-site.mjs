@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { mkdtemp, mkdir, readdir, readFile, copyFile, lstat, utimes, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, readdir, readFile, copyFile, lstat, utimes, chmod, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
@@ -20,12 +20,16 @@ export async function syncStaticSite({ outputDirectory, destination, run = execu
   const staging = await mkdtemp(path.join(tmpdir(), 'flashforge-static-sync-'));
   try {
     await mkdir(path.join(staging, 'images'));
+    // macOS openrsync can ignore --chmod; set the staged source modes explicitly.
+    // Keep the enclosing temporary directory private.
+    await chmod(path.join(staging, 'images'), 0o755);
     const copy = async relative => {
       const source = path.join(outputDirectory, relative);
       const info = await lstat(source);
       if (!info.isFile()) throw new Error('Only generated regular files may be synced.');
       const target = path.join(staging, relative);
       await copyFile(source, target);
+      await chmod(target, 0o644);
       await utimes(target, info.atime, info.mtime);
     };
     // Freeze one complete export, so another renderer cannot change it mid-upload.
@@ -38,7 +42,8 @@ export async function syncStaticSite({ outputDirectory, destination, run = execu
       if (!PUBLIC_IMAGE.test(match[1])) throw new Error('Unexpected image reference.');
       await lstat(path.join(staging, 'images', match[1]));
     }
-    const common = ['-avzh', '-e', 'ssh -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=yes', '--timeout=30'];
+    // Public exports must remain web-readable even when startup uses umask 077.
+    const common = ['-avzh', '--chmod=Du=rwx,Dgo=rx,Fu=rw,Fgo=r', '-e', 'ssh -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=yes', '--timeout=30'];
     const options = { timeout: 45000, maxBuffer: 1024 * 1024 };
     const outputs = [];
     // Default rsync temp-file/rename behavior keeps each destination file complete.
